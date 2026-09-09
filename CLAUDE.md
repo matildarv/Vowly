@@ -20,7 +20,7 @@ Then visit `http://localhost:8843/plan.html` to create a plan (redirects into `d
 
 There is no lint or test command — verify changes by loading the page in a browser and checking the console (see "Verifying changes" below).
 
-For the Supabase-backed features (accounts, persistence) to work, `.env` needs real `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY` values (copy `.env.example` → `.env`, fill in from the Supabase dashboard's Project Settings → API). Without it, the site still works exactly as before — signed-out/local-draft mode, unchanged.
+For the Supabase-backed features (accounts, persistence) to work, `.env` needs real `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY` values (copy `.env.example` → `.env`, fill in from the Supabase dashboard's Project Settings → API), then run `python3 generate-public-config.py` (re-run any time `.env` changes — see "Supabase backend" below for why). Without it, the site still works exactly as before — signed-out/local-draft mode, unchanged.
 
 ## Visual identity (do not deviate)
 
@@ -59,7 +59,7 @@ Key cross-entity behavior worth knowing before touching budget/vendor code: **ve
 ### Supabase backend
 `js/supabase.js`, `js/auth.js`, `js/data.js`, and `supabase/schema.sql` add real accounts and persistence on top of the architecture above, without changing it:
 
-- `js/supabase.js` fetches `.env` (plain text, over http — this only works when the site is served by a real static server, not opened as `file://`) and creates the one shared `window.VOWSUPA.client`. `.env` holds `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY` and is gitignored; `.env.example` documents the shape and is tracked. **Never put a `service_role`/secret key anywhere in this repo.**
+- `js/supabase.js` fetches `public-config.txt` (plain text, over http — this only works when the site is served by a real static server, not opened as `file://`) and creates the one shared `window.VOWSUPA.client`. `public-config.txt` is generated from `.env` by `generate-public-config.py` and holds only the two values meant to be public (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`) — the app never fetches `.env` itself. Both `.env` and `public-config.txt` are gitignored; `.env.example` documents the shape and is tracked. **Never put a `service_role`/secret key anywhere in this repo, including in `.env`.**
 - `js/auth.js` (`window.VOWAUTH`) wraps sign up/in/out, session, password reset, and `ensureProfile()` (creates a couple's `profiles` row on first login).
 - `js/data.js` (`window.VOWREMOTE`) is the only file that knows the Postgres row shapes; it maps them to/from `VOWDATA`'s existing local shape.
 - `wedding-data.js` itself stays the single synchronous local cache every render function already reads/writes (unchanged) — `VOWDATA.hydrateFrom(remoteShape)` overwrites the Supabase-backed sections of that cache on page load, and `VOWDATA.enableRemoteSync(weddingId)` makes every mutator additionally fire a matching `window.VOWREMOTE.sync*()` call in the background afterward. If nobody's signed in, none of this runs and the app behaves exactly like the original localStorage-only build.
@@ -94,8 +94,8 @@ These apply to all future work here, not just the task at hand:
 - This project is connected to GitHub at `origin/main`.
 - After completing a requested change, check the work and run appropriate tests.
 - Review `git status` and `git diff` before committing.
-- If the changes are safe and successful, automatically `git add` the relevant files, create a clear, descriptive commit, and `git push origin main`.
-- Never commit or push `.env` files, API keys, passwords, Supabase credentials, secrets, or other sensitive information.
+- If the changes are safe and successful, automatically `git add` the relevant files, create a clear, descriptive commit, and `git push origin main`. **This auto-commit/push rule covers code only — it does not extend to the live Supabase database.** See "Database changes" below for the separate (never-automatic) rule that applies there.
+- Never commit or push `.env` files, `public-config.txt`, API keys, passwords, Supabase credentials, secrets, or other sensitive information.
 - Never use `git push --force`.
 - Never commit `node_modules`, temporary files, build artifacts, or other unnecessary files.
 - If there is a merge conflict, an authentication problem, a failing test, or a potentially destructive change, stop and tell the user instead of pushing.
@@ -105,3 +105,14 @@ These apply to all future work here, not just the task at hand:
 
 ### Verifying changes (what "run appropriate tests" means here)
 There's no automated test suite. "Testing" a change means: load the affected page(s) in a browser via a real `http://` server (see "Running it locally"), exercise the actual feature, and check the browser console for errors. For Supabase-backed features specifically, also confirm the relevant row actually persisted/updated correctly (e.g. via the Supabase Table Editor) — a change that only updates the local `VOWDATA` cache without the background sync succeeding is not actually done.
+
+### Database changes (Supabase migrations)
+Schema changes are tracked as migration files under `supabase/migrations/`, one file per change, oldest-first by filename timestamp (`<YYYYMMDDHHMMSS>_<description>.sql`). `supabase/migrations/20260907000000_baseline_schema.sql` is the starting point — a copy of the schema exactly as it was first run against the live project (see that file's own header comment). `supabase/schema.sql` is kept as the same content for historical reference; migrations are the canonical source going forward.
+
+The Supabase CLI is installed locally at `~/.local/bin/supabase` (not on PATH by default) and is linked to the live project (`jrxrmzpgjbjummtaybdu`). There is **no Docker/Podman on this machine**, so the CLI's own shadow-database features (`supabase db pull` in diff mode, `supabase db push`, `supabase db reset`, local dev databases) are not usable here — don't reach for them. Migrations are written and reviewed by hand instead.
+
+**The rule, with no exceptions:**
+- **Code changes** get auto-committed and auto-pushed to GitHub per the rule above, once verified.
+- **Supabase database migrations must NEVER be automatically applied to the live/production database.** Writing a new migration file and committing *the file itself* to GitHub is fine and expected (that's just tracking intent, same as any other code). Actually *running* that SQL against the live database — whether via `supabase db push`, pasting it into the Supabase SQL Editor, or any other means — always requires the user's explicit, per-change approval. Never inferred from an earlier "yes," never bundled into a routine code auto-push.
+- **Never run `supabase db reset`** against the linked project. It rebuilds a database from migration files, destroying anything not represented in them.
+- Workflow for a new schema change: create a new file in `supabase/migrations/` with the next timestamp, write the SQL, show it to the user (plain SQL, not summarized), and wait for explicit approval before it's run anywhere against the live database.

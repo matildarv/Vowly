@@ -2,10 +2,17 @@
 //
 // This is a plain static site (no build step, no bundler), so there's no
 // compile-time process to inject a .env file into browser code the way a
-// Node/Next.js project would. Instead, this file fetches .env itself as
-// plain text at runtime and parses SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY
-// out of it — so the site must be served over http(s) (a local static
-// server, or once deployed), not opened as a file:// URL.
+// Node/Next.js project would. Instead, this file fetches public-config.txt
+// — a small generated file containing only the two values that are meant to
+// be public (SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) — as plain text at
+// runtime, so the site must be served over http(s) (a local static server,
+// or once deployed), not opened as a file:// URL.
+//
+// public-config.txt is generated from .env by generate-public-config.py
+// (run it once after filling in .env, and again any time you change it) —
+// this file never fetches .env itself, so the real .env (which you might
+// one day also use for other, non-public values) is never requested by the
+// app over HTTP.
 //
 // Every other script (auth.js, data.js) awaits window.VOWSUPA.ready before
 // touching window.VOWSUPA.client, since the fetch above is asynchronous.
@@ -34,7 +41,7 @@
 
   async function loadEnv() {
     try {
-      const res = await fetch('.env', { cache: 'no-store' });
+      const res = await fetch('public-config.txt', { cache: 'no-store' });
       if (!res.ok) return {};
       return parseEnvText(await res.text());
     } catch (e) {

@@ -1,5 +1,8 @@
 # Real Supabase config — never commit real keys.
 .env
 
+# Generated from .env by generate-public-config.py — derived, not source.
+public-config.txt
+
 # OS / editor noise
 .DS_Store

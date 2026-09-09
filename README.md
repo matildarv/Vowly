@@ -45,8 +45,20 @@ SUPABASE_URL=https://abcdefgh.supabase.co
 SUPABASE_PUBLISHABLE_KEY=eyJ...your-real-key...
 ```
 
-That's it for configuration — every page reads these two values
-automatically (see **How this actually works** below if you're curious).
+Then run one more command from the project folder:
+
+```bash
+python3 generate-public-config.py
+```
+
+This writes `public-config.txt`, a small generated file holding only those
+same two values — that's what the browser actually fetches at runtime, not
+`.env` itself, so the real `.env` is never requested over HTTP. Re-run this
+command any time you change `.env`. `public-config.txt` is also gitignored
+(it's derived from `.env`, not something to hand-edit or commit).
+
+That's it for configuration — every page reads these values automatically
+(see **How this actually works** below if you're curious).
 
 ## 4. Run the database schema
 
@@ -62,6 +74,13 @@ You should see "Success. No rows returned." This creates every table
 Security, and sets up the policies that keep one couple's data away from
 another's. The script is safe to re-run if you ever need to (it won't
 duplicate anything).
+
+This project also tracks schema history as migration files under
+`supabase/migrations/` (see `CLAUDE.md`'s "Database changes" section for the
+workflow) — if you're setting this project up fresh against a brand-new
+Supabase project, running `schema.sql` once as above is all you need;
+`supabase/migrations/` exists for tracking *future* changes going forward,
+not as a second setup step.
 
 ## 5. Turn off email confirmation (optional, but recommended while testing)
 
@@ -201,3 +220,8 @@ pre-existing front-end issue, not something Stage 1 touched.
   database** (this was explicit in the brief, to leave room for Stage 2's
   vendor marketplace tables) — they still live in `localStorage` only, on
   this device, exactly as before.
+- **`.env` is never fetched by the app.** `js/supabase.js` fetches
+  `public-config.txt` instead — a small file, generated from `.env` by
+  `generate-public-config.py`, holding only the Supabase URL and publishable
+  key (both meant to be public). Both `.env` and `public-config.txt` are
+  gitignored; only `.env.example` (placeholders) is tracked.
