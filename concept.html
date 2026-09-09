@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en" class="vy">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#17161A" />
+  <title>Vowly — Editorial Atelier (Concept)</title>
+  <meta name="description" content="A concept redesign of Vowly: editorial serif masthead meets a precision planning instrument. Claret & Mercury." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="concept.css" />
+</head>
+<body class="vy-body">
+  <div class="vy-grain" aria-hidden="true"></div>
+
+  <!-- Masthead -->
+  <header class="vy-mast">
+    <div class="vy-mast__inner">
+      <a href="#top" class="vy-logo" aria-label="Vowly home">
+        <span class="vy-logo__mark">V</span>
+        <span class="vy-logo__word">Vowly</span>
+      </a>
+      <nav class="vy-nav" aria-label="Primary">
+        <a href="#specimen" class="vy-nav__link">Type</a>
+        <a href="#palette" class="vy-nav__link">Palette</a>
+        <a href="#components" class="vy-nav__link">Components</a>
+        <a href="#dashboard" class="vy-nav__link">Dashboard</a>
+      </nav>
+      <div class="vy-mast__actions">
+        <a href="#" class="vy-btn vy-btn--ghost" data-magnetic>Sign in</a>
+        <a href="#" class="vy-btn vy-btn--solid" data-magnetic>Start planning</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="vy-hero" data-reveal-group>
+      <div class="vy-hero__copy">
+        <p class="vy-eyebrow" data-reveal>Vowly — Est. for the modern couple</p>
+        <h1 class="vy-display" data-reveal>
+          The wedding<br />
+          <em>planned</em> like an<br />
+          editorial.
+        </h1>
+        <p class="vy-lede" data-reveal>
+          One calm, precise workspace for the budget, the guests, the seating and
+          the day itself — composed with the care of a masthead and the rigor of an
+          instrument.
+        </p>
+        <div class="vy-hero__cta" data-reveal>
+          <a href="#" class="vy-btn vy-btn--solid vy-btn--lg" data-magnetic>Begin your plan</a>
+          <a href="#components" class="vy-link-underline">See the system</a>
+        </div>
+        <dl class="vy-hero__stats" data-reveal>
+          <div class="vy-stat">
+            <dt class="vy-stat__label">Avg. tasks tracked</dt>
+            <dd class="vy-stat__num">142</dd>
+          </div>
+          <div class="vy-stat">
+            <dt class="vy-stat__label">On-budget rate</dt>
+            <dd class="vy-stat__num">96<span>%</span></dd>
+          </div>
+          <div class="vy-stat">
+            <dt class="vy-stat__label">Days to yes</dt>
+            <dd class="vy-stat__num">238</dd>
+          </div>
+        </dl>
+      </div>
+      <div class="vy-hero__media" data-reveal>
+        <div class="vy-hero__frame">
+          <img src="/public/concept/hero-editorial.png" alt="Editorial photograph of a couple in modern formalwear in soft window light" />
+          <span class="vy-hero__tag">Fig. 01 — The Vow</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Type specimen -->
+    <section id="specimen" class="vy-section" data-reveal-group>
+      <div class="vy-section__head" data-reveal>
+        <span class="vy-index">01</span>
+        <h2 class="vy-section__title">Typography</h2>
+        <p class="vy-section__note">Fraunces for the editorial voice, Geist for the interface, Geist&nbsp;Mono for every number that matters.</p>
+      </div>
+
+      <div class="vy-specimen">
+        <div class="vy-specimen__row" data-reveal>
+          <span class="vy-specimen__meta">Fraunces · Display</span>
+          <p class="vy-specimen__big">Something old,<br /> something bold.</p>
+        </div>
+        <div class="vy-specimen__row" data-reveal>
+          <span class="vy-specimen__meta">Geist · Body</span>
+          <p class="vy-specimen__body">
+            The interface disappears so the day can appear. Clean grotesque letterforms keep
+            long checklists, guest notes and vendor threads perfectly legible at any size,
+            while the layout does the talking.
+          </p>
+        </div>
+        <div class="vy-specimen__row" data-reveal>
+          <span class="vy-specimen__meta">Geist Mono · Data</span>
+          <p class="vy-specimen__mono">$ 24,500 · 214 GUESTS · 08.16.2026 · TABLE 12 · 96%</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Palette -->
+    <section id="palette" class="vy-section vy-section--alt" data-reveal-group>
+      <div class="vy-section__head" data-reveal>
+        <span class="vy-index">02</span>
+        <h2 class="vy-section__title">Claret &amp; Mercury</h2>
+        <p class="vy-section__note">Cool ink and paper neutrals, a deep claret signature used once per screen, and a mercury silver for quiet secondary states.</p>
+      </div>
+      <div class="vy-swatches" data-reveal>
+        <figure class="vy-swatch" style="--c:var(--ink)"><span class="vy-swatch__chip"></span><figcaption><b>Ink</b><code>#17161A</code></figcaption></figure>
+        <figure class="vy-swatch" style="--c:var(--claret)"><span class="vy-swatch__chip"></span><figcaption><b>Claret</b><code>#7C1D2E</code></figcaption></figure>
+        <figure class="vy-swatch" style="--c:var(--mercury)"><span class="vy-swatch__chip"></span><figcaption><b>Mercury</b><code>#B9BCC0</code></figcaption></figure>
+        <figure class="vy-swatch" style="--c:var(--graphite)"><span class="vy-swatch__chip"></span><figcaption><b>Graphite</b><code>#6E6B66</code></figcaption></figure>
+        <figure class="vy-swatch" style="--c:var(--stone)"><span class="vy-swatch__chip vy-swatch__chip--bordered"></span><figcaption><b>Stone</b><code>#E5E2DC</code></figcaption></figure>
+        <figure class="vy-swatch" style="--c:var(--paper)"><span class="vy-swatch__chip vy-swatch__chip--bordered"></span><figcaption><b>Paper</b><code>#FBFBFA</code></figcaption></figure>
+      </div>
+    </section>
+
+    <!-- Components -->
+    <section id="components" class="vy-section" data-reveal-group>
+      <div class="vy-section__head" data-reveal>
+        <span class="vy-index">03</span>
+        <h2 class="vy-section__title">The interaction system</h2>
+        <p class="vy-section__note">Physical, hairline-precise controls. Every element earns its motion.</p>
+      </div>
+
+      <div class="vy-grid">
+        <!-- Buttons -->
+        <article class="vy-card" data-reveal>
+          <header class="vy-card__head"><span class="vy-card__kicker">Buttons</span></header>
+          <div class="vy-card__body vy-stack">
+            <a href="#" class="vy-btn vy-btn--solid" data-magnetic>Solid — magnetic</a>
+            <a href="#" class="vy-btn vy-btn--ghost" data-magnetic>Ghost — hairline</a>
+            <a href="#" class="vy-link-underline">Underline reveal link</a>
+          </div>
+        </article>
+
+        <!-- Toggles -->
+        <article class="vy-card" data-reveal>
+          <header class="vy-card__head"><span class="vy-card__kicker">Toggles</span></header>
+          <div class="vy-card__body vy-stack">
+            <label class="vy-toggle">
+              <input type="checkbox" checked />
+              <span class="vy-toggle__track"><span class="vy-toggle__knob"></span></span>
+              <span class="vy-toggle__label">RSVP reminders</span>
+            </label>
+            <label class="vy-toggle">
+              <input type="checkbox" />
+              <span class="vy-toggle__track"><span class="vy-toggle__knob"></span></span>
+              <span class="vy-toggle__label">Plus-ones allowed</span>
+            </label>
+          </div>
+        </article>
+
+        <!-- Slider -->
+        <article class="vy-card" data-reveal>
+          <header class="vy-card__head"><span class="vy-card__kicker">Budget slider</span></header>
+          <div class="vy-card__body">
+            <div class="vy-range" data-range>
+              <input type="range" min="5000" max="80000" step="500" value="24500" aria-label="Budget" />
+              <div class="vy-range__track"><div class="vy-range__fill"></div></div>
+              <output class="vy-range__bubble">$24,500</output>
+            </div>
+            <div class="vy-range__ends"><span>$5k</span><span>$80k</span></div>
+          </div>
+        </article>
+
+        <!-- Tabs -->
+        <article class="vy-card vy-card--wide" data-reveal>
+          <header class="vy-card__head"><span class="vy-card__kicker">Tabs</span></header>
+          <div class="vy-card__body">
+            <div class="vy-tabs" data-tabs>
+              <div class="vy-tabs__list" role="tablist">
+                <button class="vy-tab is-active" role="tab" data-tab="t1">Overview</button>
+                <button class="vy-tab" role="tab" data-tab="t2">Guests</button>
+                <button class="vy-tab" role="tab" data-tab="t3">Seating</button>
+                <span class="vy-tabs__ink" aria-hidden="true"></span>
+              </div>
+              <div class="vy-tabs__panels">
+                <div class="vy-tabs__panel is-active" data-panel="t1"><p>214 confirmed of 260 invited. Three vendors pending final counts.</p></div>
+                <div class="vy-tabs__panel" data-panel="t2"><p>46 awaiting reply. Two dietary notes need a menu decision.</p></div>
+                <div class="vy-tabs__panel" data-panel="t3"><p>18 tables arranged. Table 12 is one seat over capacity.</p></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Dropdown -->
+        <article class="vy-card" data-reveal>
+          <header class="vy-card__head"><span class="vy-card__kicker">Menu</span></header>
+          <div class="vy-card__body">
+            <div class="vy-menu" data-menu>
+              <button class="vy-menu__trigger" data-magnetic>
+                Sort guests <span class="vy-menu__caret" aria-hidden="true"></span>
+              </button>
+              <ul class="vy-menu__list" role="menu">
+                <li role="menuitem">By response</li>
+                <li role="menuitem">By table</li>
+                <li role="menuitem">Alphabetical</li>
+                <li role="menuitem">Recently added</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Progress -->
+        <article class="vy-card" data-reveal>
+          <header class="vy-card__head"><span class="vy-card__kicker">Progress</span></header>
+          <div class="vy-card__body vy-stack">
+            <div class="vy-progress" data-progress="72">
+              <div class="vy-progress__meta"><span>Checklist</span><span class="vy-progress__val">72%</span></div>
+              <div class="vy-progress__bar"><span></span></div>
+            </div>
+            <div class="vy-progress" data-progress="48">
+              <div class="vy-progress__meta"><span>Budget spent</span><span class="vy-progress__val">48%</span></div>
+              <div class="vy-progress__bar"><span></span></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Calendar -->
+        <article class="vy-card vy-card--wide" data-reveal>
+          <header class="vy-card__head"><span class="vy-card__kicker">Date picker</span></header>
+          <div class="vy-card__body">
+            <div class="vy-cal" data-cal>
+              <div class="vy-cal__head">
+                <button class="vy-cal__nav" data-cal-prev aria-label="Previous month">&larr;</button>
+                <span class="vy-cal__title" data-cal-title>August 2026</span>
+                <button class="vy-cal__nav" data-cal-next aria-label="Next month">&rarr;</button>
+              </div>
+              <div class="vy-cal__dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+              <div class="vy-cal__grid" data-cal-grid></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Empty state -->
+        <article class="vy-card" data-reveal>
+          <header class="vy-card__head"><span class="vy-card__kicker">Empty state</span></header>
+          <div class="vy-card__body">
+            <div class="vy-empty">
+              <span class="vy-empty__rule"></span>
+              <p class="vy-empty__title">No vendors yet</p>
+              <p class="vy-empty__note">When you save a florist or photographer, they’ll line up here.</p>
+              <a href="#" class="vy-link-underline">Browse the directory</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Skeleton -->
+        <article class="vy-card" data-reveal>
+          <header class="vy-card__head"><span class="vy-card__kicker">Loading</span></header>
+          <div class="vy-card__body vy-stack">
+            <span class="vy-skel" style="width:80%"></span>
+            <span class="vy-skel" style="width:60%"></span>
+            <span class="vy-skel" style="width:90%"></span>
+            <span class="vy-skel" style="width:40%"></span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Dashboard preview -->
+    <section id="dashboard" class="vy-section vy-section--alt" data-reveal-group>
+      <div class="vy-section__head" data-reveal>
+        <span class="vy-index">04</span>
+        <h2 class="vy-section__title">Dashboard, composed</h2>
+        <p class="vy-section__note">Asymmetric hairline cards on a strict grid — the editorial calm applied to real planning data.</p>
+      </div>
+
+      <div class="vy-dash" data-reveal>
+        <aside class="vy-dash__rail">
+          <span class="vy-dash__brand">Vowly</span>
+          <nav class="vy-dash__menu">
+            <a class="is-active">Overview</a>
+            <a>Budget</a>
+            <a>Guests</a>
+            <a>Seating</a>
+            <a>Timeline</a>
+            <a>Checklist</a>
+          </nav>
+          <div class="vy-dash__count">
+            <span class="vy-dash__count-label">Countdown</span>
+            <span class="vy-dash__count-num">238</span>
+            <span class="vy-dash__count-unit">days</span>
+          </div>
+        </aside>
+        <div class="vy-dash__main">
+          <div class="vy-dash__top">
+            <div>
+              <p class="vy-eyebrow">Saturday · 08.16.2026</p>
+              <h3 class="vy-dash__hello">Good morning, Mara &amp; June.</h3>
+            </div>
+            <a href="#" class="vy-btn vy-btn--solid" data-magnetic>Add task</a>
+          </div>
+          <div class="vy-dash__cards">
+            <article class="vy-dcard vy-dcard--feature">
+              <span class="vy-card__kicker">Budget</span>
+              <p class="vy-dcard__big">$24,500 <span>/ $32,000</span></p>
+              <div class="vy-progress" data-progress="77">
+                <div class="vy-progress__bar"><span></span></div>
+              </div>
+              <p class="vy-dcard__note">77% allocated across 9 categories</p>
+            </article>
+            <article class="vy-dcard">
+              <span class="vy-card__kicker">Guests</span>
+              <p class="vy-dcard__big">214<span> / 260</span></p>
+              <p class="vy-dcard__note">46 awaiting reply</p>
+            </article>
+            <article class="vy-dcard">
+              <span class="vy-card__kicker">Checklist</span>
+              <p class="vy-dcard__big">102<span> / 142</span></p>
+              <p class="vy-dcard__note">7 due this week</p>
+            </article>
+            <article class="vy-dcard vy-dcard--list">
+              <span class="vy-card__kicker">Next up</span>
+              <ul class="vy-tasks">
+                <li><span class="vy-tasks__dot"></span>Confirm florist deposit<time>Aug 2</time></li>
+                <li><span class="vy-tasks__dot"></span>Send menu tasting invites<time>Aug 5</time></li>
+                <li><span class="vy-tasks__dot"></span>Finalize seating draft<time>Aug 9</time></li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="vy-foot">
+      <p class="vy-foot__word">Vowly</p>
+      <p class="vy-foot__note">Concept — Editorial Atelier · Claret &amp; Mercury · Fraunces + Geist + Geist Mono</p>
+    </footer>
+  </main>
+
+  <script src="concept.js" defer></script>
+</body>
+</html>
