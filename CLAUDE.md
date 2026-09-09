@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Vow & Co. — a static marketing site plus a client-side "couple's dashboard" app for a luxury wedding-planning product. No build step, no package manager, no backend: every page is a plain `.html` file that loads shared `.css`/`.js` via `<script src>` / `<link>` tags and runs directly in the browser.
+Vow & Co. ("Vowly") — a static marketing site plus a client-side "couple's dashboard" app for a luxury wedding-planning product, now with a real Supabase backend layered underneath it. No build step, no package manager, no bundler: every page is still a plain `.html` file that loads shared `.css`/`.js` via `<script src>` / `<link>` tags and runs directly in the browser — the backend was added by hydrating/writing through the existing client-side data layer rather than introducing a framework. See "Supabase backend" below.
 
-There is no git repository here and no test suite. There is a sibling directory, `../website v2`, which is an **older, divergent snapshot** of this same site — it is missing `wedding-data.js` and `dashboard.js` entirely and its `dashboard.html` is the small static-demo version. Do not treat it as a reference for current behavior; this directory (`website v3`) is the actively developed one.
+This directory (`website v3`) is a git repository, pushed to **`origin` → `https://github.com/matildarv/Vowly.git`, branch `main`**. There is no test suite (see "Verifying changes" below for what "tested" means here). There is a sibling directory, `../website v2`, which is an **older, divergent snapshot** of this same site — it is missing `wedding-data.js` and `dashboard.js` entirely and its `dashboard.html` is the small static-demo version, and it is not a git repository. Do not treat it as a reference for current behavior; this directory (`website v3`) is the actively developed one.
 
 ## Running it locally
 
@@ -18,7 +18,9 @@ python3 -m http.server 8843
 
 Then visit `http://localhost:8843/plan.html` to create a plan (redirects into `dashboard.html?name=...&date=...` on completion) or `http://localhost:8843/dashboard.html` directly to see the static demo state.
 
-There is no lint or test command — verify changes by loading the page in a browser and checking the console.
+There is no lint or test command — verify changes by loading the page in a browser and checking the console (see "Verifying changes" below).
+
+For the Supabase-backed features (accounts, persistence) to work, `.env` needs real `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY` values (copy `.env.example` → `.env`, fill in from the Supabase dashboard's Project Settings → API). Without it, the site still works exactly as before — signed-out/local-draft mode, unchanged.
 
 ## Visual identity (do not deviate)
 
@@ -54,6 +56,23 @@ Key cross-entity behavior worth knowing before touching budget/vendor code: **ve
 
 `VOWDATA.askVow(promptText, data)` is a template-driven "AI assistant" — pure keyword matching over real computed data (progress %, budget totals, days until wedding, overdue tasks). It's written as a stable entry point specifically so it can later be swapped for a real Claude API call without touching call sites.
 
+### Supabase backend
+`js/supabase.js`, `js/auth.js`, `js/data.js`, and `supabase/schema.sql` add real accounts and persistence on top of the architecture above, without changing it:
+
+- `js/supabase.js` fetches `.env` (plain text, over http — this only works when the site is served by a real static server, not opened as `file://`) and creates the one shared `window.VOWSUPA.client`. `.env` holds `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY` and is gitignored; `.env.example` documents the shape and is tracked. **Never put a `service_role`/secret key anywhere in this repo.**
+- `js/auth.js` (`window.VOWAUTH`) wraps sign up/in/out, session, password reset, and `ensureProfile()` (creates a couple's `profiles` row on first login).
+- `js/data.js` (`window.VOWREMOTE`) is the only file that knows the Postgres row shapes; it maps them to/from `VOWDATA`'s existing local shape.
+- `wedding-data.js` itself stays the single synchronous local cache every render function already reads/writes (unchanged) — `VOWDATA.hydrateFrom(remoteShape)` overwrites the Supabase-backed sections of that cache on page load, and `VOWDATA.enableRemoteSync(weddingId)` makes every mutator additionally fire a matching `window.VOWREMOTE.sync*()` call in the background afterward. If nobody's signed in, none of this runs and the app behaves exactly like the original localStorage-only build.
+- `supabase/schema.sql` is the full schema (`profiles`, `weddings`, `guests`, `tables`, `tasks`, `appointments`, `budget_items`, `wedding_settings`) with RLS enabled and policies enforcing the `auth user → profile → wedding → everything else` ownership chain. It's idempotent — safe to re-run.
+- **Not backed by Supabase yet, still localStorage-only:** vendors/enquiries/quotes, messages, wedding-day timeline/contacts — deliberately, to leave room for a future vendor-marketplace schema.
+- `login.html`, `signup.html`, `reset-password.html`, `update-password.html` are the auth pages, built from the same visual components as everything else (no new CSS). `dashboard.html` and `wedding-details.html` each run an async auth-check-then-hydrate bootstrap before their existing (otherwise-unchanged) render code runs.
+
+### Vendor marketplace
+`vendor-directory.js` (`window.VOWVENDORS`) is a static, hand-curated directory of real Sydney vendors — platform data, not per-couple data, and deliberately kept out of `VOWDATA`/Supabase. `vendors.html` + `vendors.js` are the public directory/search/profile UI; a couple's relationship to a vendor (shortlisted/enquiry/quote/booked) lives in `VOWDATA.vendors[]` in `dashboard.js`'s "My Vendors" view, linked by `vendorId`.
+
+### Images
+All photos live in `photos/`, referenced as `src="photos/whatever.jpg"` — not in the project root.
+
 ### `dashboard.html` + `dashboard.js` (the SPA)
 `dashboard.html` is a single page containing the sidebar, topbar, and one `<div class="app-view" data-view="...">` per section (dashboard, budget, vendors, vendor-detail, guests, seating, timeline, checklist, appointments, weddingday, messages). `dashboard.js` is a hash-router SPA over that shell:
 
@@ -67,3 +86,22 @@ Key cross-entity behavior worth knowing before touching budget/vendor code: **ve
 ### Messages / Wedding Day / Guests-Seating relationships
 - Guests (`data.guests`) and the seating chart (`data.tables`, `guest.tableId`) share one array — the seating view never holds its own guest list, it filters/reads `data.guests` directly. Keep it that way if you extend it.
 - `data.messages.threads` is one thread per vendor (`getOrCreateThread(vendorId, vendorName)`); sending a couple message schedules a `setTimeout`-simulated vendor auto-reply from a canned-response pool purely for demo realism — this lives in `dashboard.js`, not in `wedding-data.js`, since it's UI-timing behavior rather than data modeling.
+
+## Working in this repo — standing instructions
+
+These apply to all future work here, not just the task at hand:
+
+- This project is connected to GitHub at `origin/main`.
+- After completing a requested change, check the work and run appropriate tests.
+- Review `git status` and `git diff` before committing.
+- If the changes are safe and successful, automatically `git add` the relevant files, create a clear, descriptive commit, and `git push origin main`.
+- Never commit or push `.env` files, API keys, passwords, Supabase credentials, secrets, or other sensitive information.
+- Never use `git push --force`.
+- Never commit `node_modules`, temporary files, build artifacts, or other unnecessary files.
+- If there is a merge conflict, an authentication problem, a failing test, or a potentially destructive change, stop and tell the user instead of pushing.
+- Keep commits focused on the current task.
+- Preserve the existing Vowly design system and functionality unless explicitly asked to change it.
+- Before making major changes, inspect the existing code and understand how the relevant feature currently works.
+
+### Verifying changes (what "run appropriate tests" means here)
+There's no automated test suite. "Testing" a change means: load the affected page(s) in a browser via a real `http://` server (see "Running it locally"), exercise the actual feature, and check the browser console for errors. For Supabase-backed features specifically, also confirm the relevant row actually persisted/updated correctly (e.g. via the Supabase Table Editor) — a change that only updates the local `VOWDATA` cache without the background sync succeeding is not actually done.
