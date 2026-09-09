@@ -1,0 +1,10 @@
+{
+  "name": "vowly-static-preview",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Minimal static preview harness for the Vowly Editorial Atelier concept. Does not bundle or alter the existing site.",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  }
+}
