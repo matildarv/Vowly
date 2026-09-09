@@ -1,8 +1,10 @@
-// Vowly — Editorial Atelier concept interactions. Self-contained, progressive enhancement only.
+// Vowly — refined concept interactions. Self-contained, progressive enhancement only.
 (function () {
   "use strict";
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
   /* Scroll reveal with stagger inside groups */
   function initReveal() {
@@ -28,11 +30,11 @@
     items.forEach(function (el) { io.observe(el); });
   }
 
-  /* Magnetic buttons */
+  /* Magnetic buttons — subtle */
   function initMagnetic() {
     if (reduceMotion || window.matchMedia("(pointer: coarse)").matches) return;
     document.querySelectorAll("[data-magnetic]").forEach(function (el) {
-      var strength = 0.3;
+      var strength = 0.22;
       el.addEventListener("mousemove", function (e) {
         var r = el.getBoundingClientRect();
         var x = e.clientX - r.left - r.width / 2;
@@ -43,26 +45,52 @@
     });
   }
 
-  /* Range slider with fill + floating bubble */
-  function initRanges() {
-    document.querySelectorAll("[data-range]").forEach(function (wrap) {
-      var input = wrap.querySelector("input[type=range]");
-      var fill = wrap.querySelector(".vy-range__fill");
-      var bubble = wrap.querySelector(".vy-range__bubble");
-      function fmt(v) { return "$" + Number(v).toLocaleString("en-US"); }
-      function update() {
-        var min = Number(input.min), max = Number(input.max), val = Number(input.value);
-        var pct = ((val - min) / (max - min)) * 100;
-        if (fill) fill.style.width = pct + "%";
-        if (bubble) { bubble.style.left = pct + "%"; bubble.textContent = fmt(val); }
-        wrap.style.setProperty("--x", pct + "%");
+  /* Budget — premium currency input with live thousands formatting, no maximum */
+  function initMoney() {
+    document.querySelectorAll("[data-money]").forEach(function (wrap) {
+      var field = wrap.querySelector(".vy-money__field");
+      var input = wrap.querySelector(".vy-money__input");
+      var chips = Array.prototype.slice.call(wrap.querySelectorAll(".vy-chip"));
+
+      function digitsOnly(s) { return (s || "").replace(/[^\d]/g, ""); }
+      function group(digits) { return digits ? Number(digits).toLocaleString("en-US") : ""; }
+
+      function syncChips() {
+        var current = digitsOnly(input.value);
+        chips.forEach(function (c) { c.classList.toggle("is-active", c.getAttribute("data-preset") === current); });
       }
-      input.addEventListener("input", update);
-      update();
+
+      // Format as the user types, preserving caret position relative to the end.
+      input.addEventListener("input", function () {
+        var digits = digitsOnly(input.value);
+        var fromEnd = input.value.length - input.selectionStart;
+        input.value = group(digits);
+        var pos = Math.max(0, input.value.length - fromEnd);
+        try { input.setSelectionRange(pos, pos); } catch (e) {}
+        syncChips();
+      });
+
+      input.addEventListener("focus", function () { field.classList.add("is-focus"); });
+      input.addEventListener("blur", function () {
+        field.classList.remove("is-focus");
+        var digits = digitsOnly(input.value);
+        input.value = group(digits);
+        syncChips();
+      });
+
+      chips.forEach(function (chip) {
+        chip.addEventListener("click", function () {
+          input.value = group(chip.getAttribute("data-preset"));
+          syncChips();
+          input.focus();
+        });
+      });
+
+      syncChips();
     });
   }
 
-  /* Tabs with sliding ink underline */
+  /* Tabs with sliding underline */
   function initTabs() {
     document.querySelectorAll("[data-tabs]").forEach(function (root) {
       var tabs = Array.prototype.slice.call(root.querySelectorAll(".vy-tab"));
@@ -90,6 +118,7 @@
   function initMenus() {
     document.querySelectorAll("[data-menu]").forEach(function (menu) {
       var trigger = menu.querySelector(".vy-menu__trigger");
+      var label = menu.querySelector(".vy-menu__label");
       trigger.addEventListener("click", function (e) {
         e.stopPropagation();
         document.querySelectorAll("[data-menu].is-open").forEach(function (m) { if (m !== menu) m.classList.remove("is-open"); });
@@ -97,7 +126,7 @@
       });
       menu.querySelectorAll(".vy-menu__list li").forEach(function (li) {
         li.addEventListener("click", function () {
-          trigger.firstChild.textContent = li.textContent + " ";
+          if (label) label.textContent = li.textContent;
           menu.classList.remove("is-open");
         });
       });
@@ -122,18 +151,47 @@
     bars.forEach(function (b) { io.observe(b); });
   }
 
-  /* Editorial calendar */
+  /* Calendar with fast month + year selection for far-future dates */
   function initCalendar() {
     var root = document.querySelector("[data-cal]");
     if (!root) return;
     var grid = root.querySelector("[data-cal-grid]");
-    var title = root.querySelector("[data-cal-title]");
-    var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    var monthSel = root.querySelector("[data-cal-month]");
+    var yearSel = root.querySelector("[data-cal-year]");
+    var selectedLabel = root.querySelector("[data-cal-selected]");
+    var today = new Date();
     var view = new Date(2026, 7, 1);
     var selected = new Date(2026, 7, 16);
-    var today = new Date();
+
+    // Populate month + year selectors (this year through +10 for far-future weddings).
+    MONTHS.forEach(function (name, i) {
+      var o = document.createElement("option");
+      o.value = String(i); o.textContent = name;
+      monthSel.appendChild(o);
+    });
+    var startYear = today.getFullYear();
+    for (var y = startYear; y <= startYear + 10; y++) {
+      var oy = document.createElement("option");
+      oy.value = String(y); oy.textContent = String(y);
+      yearSel.appendChild(oy);
+    }
+
+    function sameDay(a, b) { return !!a && !!b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+    function fmt(d) { return d ? MONTHS_SHORT[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear() : null; }
+
+    function syncSelectors() {
+      monthSel.value = String(view.getMonth());
+      // Keep the year list covering the viewed year even if it drifts past the default range.
+      if (!yearSel.querySelector('option[value="' + view.getFullYear() + '"]')) {
+        var extra = document.createElement("option");
+        extra.value = String(view.getFullYear()); extra.textContent = String(view.getFullYear());
+        yearSel.appendChild(extra);
+      }
+      yearSel.value = String(view.getFullYear());
+    }
+
     function render() {
-      title.textContent = months[view.getMonth()] + " " + view.getFullYear();
+      syncSelectors();
       grid.innerHTML = "";
       var first = new Date(view.getFullYear(), view.getMonth(), 1);
       var startDow = (first.getDay() + 6) % 7; // Monday-first
@@ -159,17 +217,22 @@
         })(d);
         grid.appendChild(cell);
       }
+      if (selectedLabel) selectedLabel.textContent = selected ? "Selected: " + fmt(selected) : "No date selected";
     }
-    function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+
+    monthSel.addEventListener("change", function () { view.setMonth(Number(monthSel.value)); render(); });
+    yearSel.addEventListener("change", function () { view.setFullYear(Number(yearSel.value)); render(); });
     root.querySelector("[data-cal-prev]").addEventListener("click", function () { view.setMonth(view.getMonth() - 1); render(); });
     root.querySelector("[data-cal-next]").addEventListener("click", function () { view.setMonth(view.getMonth() + 1); render(); });
+    var clearBtn = root.querySelector("[data-cal-clear]");
+    if (clearBtn) clearBtn.addEventListener("click", function () { selected = null; render(); });
     render();
   }
 
   function init() {
     initReveal();
     initMagnetic();
-    initRanges();
+    initMoney();
     initTabs();
     initMenus();
     initProgress();
