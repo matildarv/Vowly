@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wedding Details — Vow &amp; Co.</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="wrap wizard-header">
+  <a href="dashboard.html" class="brand">VOW &amp; CO.</a>
+  <a href="dashboard.html" class="loginlink" style="color:var(--muted); font-size:0.85rem;">Back to dashboard</a>
+</header>
+
+<div class="wrap wizard-body">
+  <div class="wizard-step-label">Wedding details</div>
+  <h2 class="wizard-question" style="margin-bottom:12px;">Tell us more about your day</h2>
+  <p style="color:var(--muted); font-size:1rem; margin-bottom:40px; max-width:56ch;">Revisit and update this any time — every answer here feeds straight back into your checklist, next steps, and recommendations.</p>
+
+  <div class="app-card" style="margin-bottom:20px;">
+    <h3>The basics</h3>
+    <div class="form-grid" style="margin-top:16px;">
+      <div class="form-field"><label>Wedding date</label><input type="date" id="fieldDate"></div>
+      <div class="form-field">
+        <label>Location</label>
+        <select id="fieldLocation">
+          <option value="" disabled>Select a location</option>
+          <option>Sydney</option>
+          <option>Melbourne</option>
+          <option>Brisbane</option>
+          <option>Perth</option>
+          <option>Adelaide</option>
+          <option>Gold Coast</option>
+          <option>Canberra</option>
+          <option>Hobart</option>
+          <option>Byron Bay</option>
+          <option>Other / regional</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field" style="margin-top:8px;">
+      <label style="display:flex; justify-content:space-between;">Guest count <span id="guestsValue" style="color:var(--black); font-weight:600;"></span></label>
+      <input type="range" id="fieldGuests" min="10" max="400" step="5">
+    </div>
+    <div class="form-field" style="margin-top:20px;">
+      <label style="display:flex; justify-content:space-between;">Budget <span id="budgetValue" style="color:var(--black); font-weight:600;"></span></label>
+      <input type="range" id="fieldBudget" min="5000" max="150000" step="1000">
+    </div>
+  </div>
+
+  <div class="app-card" style="margin-bottom:20px;">
+    <h3>Wedding style</h3>
+    <div class="wizard-style-grid" id="styleGrid" style="margin-top:16px;"></div>
+  </div>
+
+  <div class="app-card" style="margin-bottom:20px;">
+    <h3>Dress code</h3>
+    <div class="calc-style-row" id="dressCodeRow" style="margin-top:14px;"></div>
+  </div>
+
+  <div class="app-card" style="margin-bottom:20px;">
+    <h3>Ceremony type</h3>
+    <div class="calc-style-row" id="ceremonyTypeRow" style="margin-top:14px;"></div>
+  </div>
+
+  <div class="app-card" style="margin-bottom:20px;">
+    <h3>Reception type</h3>
+    <div class="calc-style-row" id="receptionTypeRow" style="margin-top:14px;"></div>
+  </div>
+
+  <div class="app-card" style="margin-bottom:20px;">
+    <h3>What have you already booked?</h3>
+    <p style="color:var(--muted); font-size:0.88rem; margin:8px 0 14px;">We'll mark matching checklist tasks as complete for you.</p>
+    <div class="calc-style-row" id="alreadyBookedRow"></div>
+    <div class="form-field" style="margin-top:14px;">
+      <label>Anything else already booked?</label>
+      <input type="text" id="alreadyBookedOther" placeholder="e.g. Hair &amp; makeup, Stationery">
+    </div>
+  </div>
+
+  <div class="app-card" style="margin-bottom:20px;">
+    <h3>What do you need help with?</h3>
+    <p style="color:var(--muted); font-size:0.88rem; margin:8px 0 14px;">These will surface sooner in your next steps.</p>
+    <div class="calc-style-row" id="needHelpRow"></div>
+    <div class="form-field" style="margin-top:14px;">
+      <label>Anything else you need help with?</label>
+      <input type="text" id="needHelpOther" placeholder="e.g. Hair &amp; makeup, Stationery">
+    </div>
+  </div>
+
+  <div class="app-card" style="margin-bottom:32px;">
+    <h3>Priorities</h3>
+    <p style="color:var(--muted); font-size:0.88rem; margin:8px 0 14px;">What matters most to you, in your own words?</p>
+    <div class="form-field">
+      <textarea id="priorities" placeholder="e.g. We really want great live music and a relaxed, unfussy dinner." style="width:100%; min-height:110px; padding:12px 14px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.95rem;"></textarea>
+    </div>
+  </div>
+
+  <div class="wizard-nav">
+    <a href="dashboard.html" class="btn btn--ghost">Cancel</a>
+    <button class="btn btn--black" onclick="saveDetails()">Save changes</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="calculator.js"></script>
+<script src="wedding-data.js"></script>
+<script>
+  (async function () {
+    // Each page load starts with a clean VOWDATA module, so — same as
+    // dashboard.js — a signed-in couple's Supabase wedding has to be
+    // re-hydrated into the local cache here before reading VOWDATA.get().
+    const sessionResult = await VOWAUTH.getSession();
+    if (sessionResult.data) {
+      try {
+        const profileResult = await VOWAUTH.ensureProfile({});
+        const profile = profileResult.data;
+        const wedding = profile ? await VOWREMOTE.getWeddingForProfile(profile.id) : null;
+        if (wedding) {
+          const full = await VOWREMOTE.fetchFullWedding(wedding.id);
+          VOWDATA.hydrateFrom(full);
+          VOWDATA.enableRemoteSync(wedding.id);
+        }
+      } catch (e) {
+        console.error('[Vow & Co.] Failed to load your wedding from Supabase:', e);
+        alert('Something went wrong loading your wedding. Please go back and try again.');
+        window.location.href = 'dashboard.html';
+        return;
+      }
+    }
+
+    const data = VOWDATA.get();
+    if (!data) {
+      window.location.href = 'dashboard.html';
+      return;
+    }
+    const w = data.wedding;
+
+    function esc(s) {
+      return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+
+    // ---- The basics ----
+    document.getElementById('fieldDate').value = w.date || '';
+
+    const locationSelect = document.getElementById('fieldLocation');
+    const hasMatch = Array.prototype.some.call(locationSelect.options, function (o) { return o.value === w.location; });
+    if (w.location && !hasMatch) {
+      const opt = document.createElement('option');
+      opt.value = w.location;
+      opt.textContent = w.location;
+      locationSelect.insertBefore(opt, locationSelect.firstChild);
+    }
+    locationSelect.value = w.location || '';
+
+    const guestsInput = document.getElementById('fieldGuests');
+    const guestsValue = document.getElementById('guestsValue');
+    guestsInput.value = w.guests || 120;
+    guestsValue.textContent = (w.guests || 120) + ' guests';
+    guestsInput.addEventListener('input', function (e) { guestsValue.textContent = e.target.value + ' guests'; });
+
+    const budgetInput = document.getElementById('fieldBudget');
+    const budgetValue = document.getElementById('budgetValue');
+    budgetInput.value = w.budget || 45000;
+    budgetValue.textContent = VOWCO.formatCurrency(w.budget || 45000);
+    budgetInput.addEventListener('input', function (e) { budgetValue.textContent = VOWCO.formatCurrency(e.target.value); });
+
+    // ---- Wedding style (same options as the original wizard) ----
+    const styles = [
+      { key: 'classic', label: 'Classic', icon: '<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>' },
+      { key: 'modern', label: 'Modern', icon: '<rect x="4" y="4" width="16" height="16"/>' },
+      { key: 'romantic', label: 'Romantic', icon: '<path d="M12 20s-7-4.5-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 5c-2.3 4.5-9.3 9-9.3 9Z"/>' },
+      { key: 'coastal', label: 'Coastal', icon: '<path d="M3 17c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2M3 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/>' },
+      { key: 'rustic', label: 'Rustic', icon: '<path d="M4 20V10l8-6 8 6v10"/><path d="M9 20v-6h6v6"/>' },
+      { key: 'luxury', label: 'Luxury', icon: '<path d="M4 8l4 8h8l4-8-6 3-2-5-2 5-6-3Z"/>' },
+      { key: 'minimal', label: 'Minimal', icon: '<line x1="4" y1="12" x2="20" y2="12"/>' },
+      { key: 'garden', label: 'Garden', icon: '<circle cx="12" cy="8" r="3"/><path d="M12 11c-3 3-1 6 0 9 1-3 3-6 0-9Z"/>' }
+    ];
+    let selectedStyle = w.style || '';
+    function renderStyleGrid() {
+      document.getElementById('styleGrid').innerHTML = styles.map(function (s) {
+        const active = s.key === selectedStyle ? ' active' : '';
+        return '<button type="button" class="style-card' + active + '" data-style="' + s.key + '">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.4">' + s.icon + '</svg>' +
+          '<span>' + s.label + '</span></button>';
+      }).join('');
+      document.querySelectorAll('#styleGrid .style-card').forEach(function (btn) {
+        btn.addEventListener('click', function () { selectedStyle = btn.dataset.style; renderStyleGrid(); });
+      });
+    }
+    renderStyleGrid();
+
+    // ---- Single-select chip rows (dress code, ceremony type, reception type) ----
+    let selectedDressCode = w.dressCode || '';
+    let selectedCeremonyType = w.ceremonyType || '';
+    let selectedReceptionType = w.receptionType || '';
+
+    function renderSingleChipRow(containerId, options, getSelected, setSelected) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = options.map(function (opt) {
+        return '<button type="button" class="' + (opt === getSelected() ? 'active' : '') + '" data-val="' + esc(opt) + '">' + esc(opt) + '</button>';
+      }).join('');
+      el.querySelectorAll('button').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          setSelected(btn.dataset.val === getSelected() ? '' : btn.dataset.val);
+          renderSingleChipRow(containerId, options, getSelected, setSelected);
+        });
+      });
+    }
+    renderSingleChipRow('dressCodeRow', VOWDATA.DRESS_CODES, function () { return selectedDressCode; }, function (v) { selectedDressCode = v; });
+    renderSingleChipRow('ceremonyTypeRow', VOWDATA.CEREMONY_TYPES, function () { return selectedCeremonyType; }, function (v) { selectedCeremonyType = v; });
+    renderSingleChipRow('receptionTypeRow', VOWDATA.RECEPTION_TYPES, function () { return selectedReceptionType; }, function (v) { selectedReceptionType = v; });
+
+    // ---- Multi-select chip rows (already booked / need help with) ----
+    // Values are the same categories used by task.category, so the dashboard
+    // can match them with no translation layer. Anything typed into the
+    // "anything else" field is kept as free text and shown, but doesn't
+    // drive checklist automation since it has no matching task category.
+    function splitCategoryArray(arr) {
+      const canonicalValues = VOWDATA.WEDDING_DETAIL_CATEGORIES.map(function (c) { return c.value; });
+      const canonical = (arr || []).filter(function (v) { return canonicalValues.indexOf(v) !== -1; });
+      const other = (arr || []).filter(function (v) { return canonicalValues.indexOf(v) === -1; });
+      return { canonical: canonical, other: other.join(', ') };
+    }
+    const alreadyBookedState = splitCategoryArray(w.alreadyBooked);
+    const needHelpState = splitCategoryArray(w.needHelpWith);
+
+    function renderMultiChipRow(containerId, state) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = VOWDATA.WEDDING_DETAIL_CATEGORIES.map(function (c) {
+        const active = state.canonical.indexOf(c.value) !== -1 ? ' active' : '';
+        return '<button type="button" class="' + active.trim() + '" data-val="' + esc(c.value) + '">' + esc(c.label) + '</button>';
+      }).join('');
+      el.querySelectorAll('button').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const val = btn.dataset.val;
+          const idx = state.canonical.indexOf(val);
+          if (idx === -1) state.canonical.push(val); else state.canonical.splice(idx, 1);
+          renderMultiChipRow(containerId, state);
+        });
+      });
+    }
+    renderMultiChipRow('alreadyBookedRow', alreadyBookedState);
+    renderMultiChipRow('needHelpRow', needHelpState);
+    document.getElementById('alreadyBookedOther').value = alreadyBookedState.other;
+    document.getElementById('needHelpOther').value = needHelpState.other;
+
+    function finalizeCategoryArray(state, otherInputId) {
+      const otherVal = document.getElementById(otherInputId).value.trim();
+      const otherList = otherVal ? otherVal.split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
+      return state.canonical.concat(otherList);
+    }
+
+    // ---- Priorities ----
+    document.getElementById('priorities').value = w.priorities || '';
+
+    // ---- Save ----
+    window.saveDetails = async function () {
+      const patch = {
+        date: document.getElementById('fieldDate').value,
+        location: document.getElementById('fieldLocation').value,
+        guests: Number(document.getElementById('fieldGuests').value),
+        budget: Number(document.getElementById('fieldBudget').value),
+        style: selectedStyle,
+        dressCode: selectedDressCode,
+        ceremonyType: selectedCeremonyType,
+        receptionType: selectedReceptionType,
+        alreadyBooked: finalizeCategoryArray(alreadyBookedState, 'alreadyBookedOther'),
+        needHelpWith: finalizeCategoryArray(needHelpState, 'needHelpOther'),
+        priorities: document.getElementById('priorities').value.trim()
+      };
+      VOWDATA.updateWeddingDetails(patch);
+      // Wait for the background Supabase write(s) to finish before
+      // navigating away — otherwise the page unload can cancel the
+      // in-flight request and the update silently never lands.
+      await VOWDATA.waitForSync();
+      window.location.href = 'dashboard.html?updated=details';
+    };
+  })();
+</script>
+<script src="script.js"></script>
+</body>
+</html>

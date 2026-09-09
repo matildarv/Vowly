@@ -1,0 +1,5 @@
+# Real Supabase config — never commit real keys.
+.env
+
+# OS / editor noise
+.DS_Store

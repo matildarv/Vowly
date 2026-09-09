@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Vow &amp; Co.</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="app-sidebar" id="appSidebar">
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <a href="index.html" class="brand">VOW &amp; CO.</a>
+      <button class="app-mobile-toggle" id="mobileNavToggle" aria-label="Open menu"><span></span></button>
+    </div>
+
+    <div class="app-sidebar-scroll">
+      <div class="app-nav-group">
+        <div class="app-nav-label">Overview</div>
+        <nav class="app-nav" id="mainNav">
+          <a href="#dashboard" data-view="dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+          <a href="wedding-details.html"><svg viewBox="0 0 24 24"><path d="M4 21v-3.5L16 6l3.5 3.5L8 21H4Z"/><path d="M13.5 8.5l3.5 3.5"/></svg>Wedding details</a>
+          <a href="#budget" data-view="budget"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5c0-1.4 1.3-2.5 3-2.5s3 1 3 2.2c0 2.8-6 1.8-6 4.6 0 1.3 1.3 2.2 3 2.2s3-1 3-2.5"/></svg>Budget</a>
+          <a href="#vendors" data-view="vendors"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V9l7-6 7 6v12M9 21v-6h6v6"/></svg>My vendors</a>
+          <a href="#guests" data-view="guests"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.3 3.1-6 7-6s7 2.7 7 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.2c2.7.4 5 2.6 5 5.8"/></svg>Guest list</a>
+          <a href="#seating" data-view="seating"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M9 9v12"/></svg>Seating chart</a>
+          <a href="#timeline" data-view="timeline"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/></svg>Timeline</a>
+          <a href="#checklist" data-view="checklist"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Checklist</a>
+          <a href="#appointments" data-view="appointments"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 8h18M8 4v4"/></svg>Appointments</a>
+          <a href="#weddingday" data-view="weddingday"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2"/><path d="M9 2h6"/></svg>Wedding day mode</a>
+          <a href="#messages" data-view="messages"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Messages</a>
+        </nav>
+      </div>
+
+      <div class="app-nav-group">
+        <div class="app-nav-label">By category</div>
+        <nav class="app-nav">
+          <a href="#checklist:Ceremony" data-view="checklist"><svg viewBox="0 0 24 24"><path d="M12 2v6M8 5l4 3 4-3"/><path d="M5 21h14l-1-9H6z"/></svg>Ceremony</a>
+          <a href="#checklist:Reception" data-view="checklist"><svg viewBox="0 0 24 24"><rect x="3" y="10" width="18" height="10" rx="1"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>Reception</a>
+          <a href="#checklist:Catering" data-view="checklist"><svg viewBox="0 0 24 24"><path d="M4 19h16M6 19V9l3-4h6l3 4v10"/></svg>Catering</a>
+          <a href="#checklist:Flowers" data-view="checklist"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M12 11c-3 3-1 6 0 9 1-3 3-6 0-9Z"/></svg>Flowers</a>
+        </nav>
+      </div>
+
+      <div class="app-sidebar-foot">
+        <div class="avatar"><img src="photos/ringshands2.jpg" alt=""></div>
+        <div>
+          <div class="who" id="sidebarWho">Maren &amp; Josh</div>
+          <div class="role" id="sidebarDate">14 June 2026</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <div id="demoNotice" style="background:var(--offwhite); border:1px solid var(--line); padding:14px 18px; font-size:0.85rem; color:var(--muted); margin-bottom:24px;">
+      This is an example of a fully planned wedding, so you can see where things end up. <a href="plan.html" class="link" style="text-decoration:underline;">Build your own free plan</a> to start from your own details.
+    </div>
+    <div id="confirmBanner" style="display:none; background:var(--black); color:var(--white); padding:14px 18px; font-size:0.85rem; margin-bottom:24px;">
+      Your wedding details have been updated.
+    </div>
+    <div class="app-topbar">
+      <div>
+        <h1 id="topbarGreeting">Good morning, Maren</h1>
+        <div class="date" id="topbarDate">142 days until the wedding</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <a href="#" id="resetLink" style="display:none; font-size:0.82rem; color:var(--muted); text-decoration:underline;">Reset my plan</a>
+        <a href="pricing.html" class="btn btn--ghost">Upgrade to Plus</a>
+      </div>
+    </div>
+
+    <!-- ============ VIEW: DASHBOARD ============ -->
+    <div class="app-view active" data-view="dashboard" id="view-dashboard">
+      <div class="app-card" style="margin-bottom:20px;">
+        <h3>Your next 3 steps</h3>
+        <p id="prioritiesNote" style="display:none; font-size:0.85rem; color:var(--muted); font-style:italic; margin-top:8px;"></p>
+        <div id="nextStepsList">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:16px 0; border-bottom:1px solid var(--line);">
+            <div><div style="font-family:'Bodoni Moda',serif; font-size:1rem; margin-bottom:4px;">01 — Book your photographer</div>
+            <div style="font-size:0.85rem; color:var(--muted);">You have 142 days until your wedding. We recommend booking this within the next 2 weeks.</div></div>
+            <a href="vendors.html" class="link" style="white-space:nowrap; text-decoration:underline;">Find photographers</a>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:16px 0; border-bottom:1px solid var(--line);">
+            <div><div style="font-family:'Bodoni Moda',serif; font-size:1rem; margin-bottom:4px;">02 — Confirm final guest numbers</div>
+            <div style="font-size:0.85rem; color:var(--muted);">Your caterer will need final numbers before the wedding.</div></div>
+            <a href="#guests" class="link" style="white-space:nowrap; text-decoration:underline;">Manage guest list</a>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:16px 0;">
+            <div><div style="font-family:'Bodoni Moda',serif; font-size:1rem; margin-bottom:4px;">03 — Finalise ceremony readings</div>
+            <div style="font-size:0.85rem; color:var(--muted);">A few readings are still unconfirmed on your checklist.</div></div>
+            <a href="#checklist" class="link" style="white-space:nowrap; text-decoration:underline;">View checklist</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="app-card" style="margin-bottom:28px;">
+        <h3 style="margin-bottom:14px;">Your wedding is <span id="progressPct">47</span>% planned</h3>
+        <div class="budget-bar-track" style="height:8px;"><div class="budget-bar-fill" id="progressBarFill" style="width:47%;"></div></div>
+        <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:0.85rem; flex-wrap:wrap; gap:8px;">
+          <span style="color:var(--muted);" id="progressSub">34 of 72 important tasks complete</span>
+          <span id="progressMsg">You're on track for your wedding.</span>
+        </div>
+      </div>
+
+      <div class="app-card" id="weddingDetailsCard" style="margin-bottom:28px;"></div>
+
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="label" id="statBudgetLabel">Budget spent</div>
+          <div class="num" id="statBudgetNum">$18,400</div>
+          <div class="sub" id="statBudgetSub">of $32,000 total</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Guests confirmed</div>
+          <div class="num" id="statGuestsNum">98</div>
+          <div class="sub" id="statGuestsSub">of 142 invited</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Tasks complete</div>
+          <div class="num" id="statTasksNum">24 / 41</div>
+          <div class="sub" id="statTasksSub">on track for your date</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Vendors booked</div>
+          <div class="num" id="statVendorsNum">6</div>
+          <div class="sub" id="statVendorsSub">2 quotes pending</div>
+        </div>
+      </div>
+
+      <div class="app-grid">
+        <div class="app-card">
+          <h3>Budget by category</h3>
+          <div class="budget-rows" id="dashBudgetRows">
+            <div class="budget-row">
+              <div class="top"><span class="cat">Venue &amp; reception</span><span class="amt">$9,200 / $14,000</span></div>
+              <div class="budget-bar-track"><div class="budget-bar-fill" data-fill="66%"></div></div>
+            </div>
+            <div class="budget-row">
+              <div class="top"><span class="cat">Catering</span><span class="amt">$4,100 / $7,500</span></div>
+              <div class="budget-bar-track"><div class="budget-bar-fill" data-fill="55%"></div></div>
+            </div>
+            <div class="budget-row">
+              <div class="top"><span class="cat">Photography &amp; film</span><span class="amt">$3,000 / $4,500</span></div>
+              <div class="budget-bar-track"><div class="budget-bar-fill" data-fill="67%"></div></div>
+            </div>
+            <div class="budget-row">
+              <div class="top"><span class="cat">Flowers</span><span class="amt">$1,600 / $3,200</span></div>
+              <div class="budget-bar-track"><div class="budget-bar-fill" data-fill="50%"></div></div>
+            </div>
+            <div class="budget-row">
+              <div class="top"><span class="cat">Attire</span><span class="amt">$500 / $2,800</span></div>
+              <div class="budget-bar-track"><div class="budget-bar-fill" data-fill="18%"></div></div>
+            </div>
+          </div>
+          <div style="margin-top:16px;"><a href="#budget" class="link">View full budget</a></div>
+        </div>
+
+        <div class="app-card">
+          <h3>Upcoming appointments</h3>
+          <ul class="appt-list" id="dashAppointments">
+            <li><span>Menu tasting</span><span class="who">Fri, 12 Sep</span></li>
+            <li><span>Dress fitting</span><span class="who">Wed, 17 Sep</span></li>
+            <li><span>Florist consultation</span><span class="who">Mon, 22 Sep</span></li>
+            <li><span>Venue walkthrough</span><span class="who">Sat, 4 Oct</span></li>
+          </ul>
+          <div style="margin-top:16px;"><a href="#appointments" class="link">View full calendar</a></div>
+        </div>
+      </div>
+
+      <div class="app-grid">
+        <div class="app-card">
+          <h3>Recommended for you</h3>
+          <div id="dashRecommendedVendors"></div>
+          <div style="margin-top:16px;"><a href="vendors.html" class="link">Browse the full directory</a></div>
+        </div>
+        <div class="app-card">
+          <h3>Upcoming vendor payments</h3>
+          <ul class="appt-list" id="dashUpcomingPayments"></ul>
+          <div style="margin-top:16px;"><a href="#vendors" class="link">View my vendors</a></div>
+        </div>
+      </div>
+
+      <div class="app-grid">
+        <div class="app-card" id="checklist">
+          <h3 id="checklistTitle">Checklist — this week</h3>
+          <ul class="checklist-app" id="dashChecklist">
+            <li class="done"><span class="box"></span>Send save-the-dates</li>
+            <li class="done"><span class="box"></span>Book florist</li>
+            <li><span class="box"></span>Confirm final headcount with caterer</li>
+            <li><span class="box"></span>Finalize ceremony readings</li>
+            <li><span class="box"></span>Order table linens</li>
+          </ul>
+          <div id="addTaskRow" style="display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); gap:8px;">
+            <input type="text" id="newTaskInput" required placeholder="Add a task…" style="width:100%; padding:10px 12px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.88rem; margin-bottom:8px;">
+            <button class="btn btn--ghost" style="width:100%; justify-content:center;" onclick="DASH.addNewTask()">Add task</button>
+          </div>
+          <div style="margin-top:16px;"><a href="#checklist" class="link">View full checklist</a></div>
+        </div>
+        <div class="app-card" id="guests">
+          <h3>Guest list snapshot</h3>
+          <ul class="appt-list" id="guestSnapshot">
+            <li><span>Invited</span><span class="who">142</span></li>
+            <li><span>Confirmed</span><span class="who">98</span></li>
+            <li><span>Declined</span><span class="who">12</span></li>
+            <li><span>Awaiting response</span><span class="who">32</span></li>
+          </ul>
+          <p id="seatingCateringSummary" style="font-size:0.82rem; color:var(--muted); margin-top:14px; padding-top:14px; border-top:1px solid var(--line);"></p>
+          <div style="margin-top:12px; display:flex; gap:16px; flex-wrap:wrap;"><a href="#guests" class="link">Manage guest list</a><a href="#seating" class="link">View seating chart</a></div>
+        </div>
+      </div>
+
+      <div class="app-grid">
+        <div class="app-card">
+          <h3>What's happening this month?</h3>
+          <div id="monthSummary" style="font-size:0.85rem; color:var(--muted); margin-bottom:14px;">You've completed 0 of 0 tasks this month.</div>
+          <ul class="checklist-app" id="monthTaskList"></ul>
+        </div>
+        <div class="app-card">
+          <h3>Ask Vow</h3>
+          <div class="askvow-prompts" id="askVowPrompts"></div>
+          <div class="askvow-thread" id="askVowThread"></div>
+          <div class="askvow-input-row">
+            <input type="text" id="askVowInput" placeholder="Ask about your budget, timeline, or what's next…">
+            <button class="btn btn--black" onclick="DASH.askVowSend()">Ask</button>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size:1.1rem; font-weight:500; margin-bottom:16px;">Wedding day categories</h3>
+      <div class="cat-cards" id="catCards">
+        <a class="cat-card" href="#checklist:Ceremony">
+          <div class="photo cat-photo"><img src="photos/vows.jpg" alt="Ceremony"></div>
+          <div class="cat-body"><h4>Ceremony</h4><div class="progress" id="catCeremonyProgress">5 of 6 tasks complete</div></div>
+        </a>
+        <a class="cat-card" href="#checklist:Reception">
+          <div class="photo cat-photo"><img src="photos/receptionhall2.jpg" alt="Reception"></div>
+          <div class="cat-body"><h4>Reception</h4><div class="progress" id="catReceptionProgress">7 of 12 tasks complete</div></div>
+        </a>
+        <a class="cat-card" href="#checklist:Catering">
+          <div class="photo cat-photo"><img src="photos/cake.jpg" alt="Catering"></div>
+          <div class="cat-body"><h4>Catering</h4><div class="progress" id="catCateringProgress">4 of 8 tasks complete</div></div>
+        </a>
+        <a class="cat-card" href="#checklist:Flowers">
+          <div class="photo cat-photo"><img src="photos/bridesmaids2.jpg" alt="Flowers"></div>
+          <div class="cat-body"><h4>Flowers</h4><div class="progress" id="catFlowersProgress">3 of 5 tasks complete</div></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- ============ VIEW: BUDGET ============ -->
+    <div class="app-view" data-view="budget" id="view-budget">
+      <div class="app-view-head">
+        <div><h2>Budget</h2><p>Every expense and vendor quote in one place, tracked against your overall budget.</p></div>
+      </div>
+
+      <div class="stat-row" id="budgetStatRow"></div>
+      <div class="alert-list" id="budgetAlerts"></div>
+
+      <div class="app-card" style="margin-bottom:20px;">
+        <h3>Budget by category</h3>
+        <div class="budget-rows" id="budgetCategoryRows"></div>
+      </div>
+
+      <div class="app-card" style="margin-bottom:20px;">
+        <div class="app-view-head" style="margin-bottom:14px;">
+          <h3 style="margin:0;">Expenses</h3>
+          <button class="btn btn--ghost" id="toggleExpenseForm" onclick="DASH.toggleExpenseForm()">Add expense</button>
+        </div>
+        <div class="form-panel" id="expenseFormPanel" style="display:none;">
+          <div class="form-grid cols-3" id="expenseFormFields"></div>
+          <div class="form-actions">
+            <button class="btn btn--black" onclick="DASH.saveExpenseForm()">Save expense</button>
+            <button class="btn btn--ghost" onclick="DASH.cancelExpenseForm()">Cancel</button>
+          </div>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table" id="expenseTable"></table>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <h3>Compare vendor quotes</h3>
+        <p style="color:var(--muted); font-size:0.88rem; margin-bottom:16px;">Quotes you've saved against vendors in your <a href="#vendors" class="link" style="text-decoration:underline;">My Vendors</a> list, grouped by category so you can compare side by side.</p>
+        <div class="compare-row">
+          <select id="compareCategorySelect"></select>
+        </div>
+        <div class="quote-compare-grid" id="quoteCompareGrid"></div>
+      </div>
+    </div>
+
+    <!-- ============ VIEW: VENDORS ============ -->
+    <div class="app-view" data-view="vendors" id="view-vendors">
+      <div class="app-view-head">
+        <div><h2>My vendors</h2><p>Every vendor you've saved, enquired with, or booked — grouped by category.</p></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a href="vendors.html" class="btn btn--ghost">Browse directory</a>
+          <button class="btn btn--black" onclick="DASH.toggleVendorForm()">Add vendor manually</button>
+        </div>
+      </div>
+      <div class="app-card" style="margin-bottom:20px;">
+        <div id="vendorProgressLine" style="font-size:0.95rem; margin-bottom:10px;"></div>
+        <div class="budget-bar-track" style="height:8px;"><div class="budget-bar-fill" id="vendorProgressBar" style="width:0%;"></div></div>
+      </div>
+      <div id="vendorFilterTabs" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;"></div>
+      <div class="app-card form-panel" id="vendorFormPanel" style="display:none; margin-bottom:20px;">
+        <div class="form-grid cols-3" id="vendorFormFields"></div>
+        <div class="form-actions">
+          <button class="btn btn--black" onclick="DASH.saveVendorForm()">Save vendor</button>
+          <button class="btn btn--ghost" onclick="DASH.cancelVendorForm()">Cancel</button>
+        </div>
+      </div>
+      <div id="vendorGroupsWrap"></div>
+    </div>
+
+    <!-- ============ VIEW: VENDOR DETAIL ============ -->
+    <div class="app-view" data-view="vendor-detail" id="view-vendor-detail">
+      <a href="#vendors" class="app-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Back to My vendors</a>
+      <div class="app-view-head" id="vendorDetailHead"></div>
+      <div class="app-card" id="vendorEnquiryCard" style="margin-bottom:20px;"></div>
+      <div class="vendor-detail-grid">
+        <div class="app-card">
+          <h3>Contact</h3>
+          <div id="vendorDetailContact"></div>
+        </div>
+        <div class="app-card">
+          <h3>Quote</h3>
+          <div id="vendorDetailQuote"></div>
+        </div>
+      </div>
+      <div class="app-grid" style="margin-top:20px;">
+        <div class="app-card">
+          <h3>Notes</h3>
+          <textarea id="vendorNotesInput" style="width:100%; min-height:140px; padding:12px 14px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.9rem;"></textarea>
+          <div class="form-actions" style="margin-top:12px;">
+            <button class="btn btn--ghost" onclick="DASH.saveVendorDetailNotes()">Save notes</button>
+          </div>
+        </div>
+        <div class="app-card">
+          <h3>Documents</h3>
+          <div class="doc-placeholder">No documents yet. Uploads will connect to real file storage soon — for now, use Notes to keep track of contract details.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ VIEW: GUESTS ============ -->
+    <div class="app-view" data-view="guests" id="view-guests">
+      <div class="app-view-head">
+        <div><h2>Guest list</h2><p id="guestSummaryLine">Track RSVPs, dietary needs, and table assignments in one place.</p></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn--ghost" onclick="DASH.toggleImportGuests()">Import guests</button>
+          <button class="btn btn--ghost" onclick="DASH.exportGuestList()">Export guest list</button>
+          <button class="btn btn--black" onclick="DASH.toggleGuestForm()">Add guest</button>
+        </div>
+      </div>
+
+      <div class="app-card" style="margin-bottom:20px;">
+        <div id="guestProgressLine" style="font-size:0.95rem; margin-bottom:10px;"></div>
+        <div class="budget-bar-track" style="height:8px;"><div class="budget-bar-fill" id="guestProgressBar" style="width:0%;"></div></div>
+      </div>
+
+      <div class="guest-stat-row" id="guestStatRow"></div>
+
+      <div class="app-card" style="margin-bottom:20px;">
+        <h3>Dietary requirements</h3>
+        <div class="dietary-rows" id="dietaryRows"></div>
+      </div>
+
+      <div class="app-card form-panel" id="importGuestsPanel" style="display:none; margin-bottom:20px;">
+        <h3>Import guests</h3>
+        <p style="color:var(--muted); font-size:0.86rem; margin-bottom:12px;">Upload a .csv file, or paste CSV text with a header row (First name, Last name, Email, Phone, RSVP, Dietary).</p>
+        <input type="file" accept=".csv,text/csv" id="importGuestsFile" style="margin-bottom:10px; display:block;">
+        <textarea id="importGuestsText" placeholder="First name,Last name,Email,Phone,RSVP,Dietary" style="width:100%; min-height:100px; padding:12px 14px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.85rem;"></textarea>
+        <p id="importGuestsResult" style="font-size:0.85rem; margin-top:10px; display:none;"></p>
+        <div class="form-actions" style="margin-top:12px;">
+          <button class="btn btn--black" onclick="DASH.importGuests()">Import</button>
+          <button class="btn btn--ghost" onclick="DASH.cancelImportGuests()">Cancel</button>
+        </div>
+      </div>
+
+      <div class="app-card form-panel" id="guestFormPanel" style="display:none; margin-bottom:20px;">
+        <div id="guestFormFields"></div>
+        <p id="guestFormError" style="color:#a33; font-size:0.85rem; margin-top:12px; display:none;"></p>
+        <div class="form-actions" style="margin-top:16px;">
+          <button class="btn btn--black" onclick="DASH.saveGuestForm()">Save guest</button>
+          <button class="btn btn--ghost" onclick="DASH.cancelGuestForm()">Cancel</button>
+          <a href="#" class="row-action" id="deleteGuestLink" style="display:none; margin-left:auto;">Remove guest</a>
+        </div>
+      </div>
+
+      <div class="app-card" style="margin-bottom:20px;">
+        <input type="text" id="guestSearchInput" placeholder="Search by name, email, or phone…" style="width:100%; padding:11px 14px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.9rem; margin-bottom:14px;">
+        <div class="calc-style-row" id="guestFilterRow"></div>
+      </div>
+
+      <div class="app-card">
+        <div class="data-table-wrap" id="guestTableWrap">
+          <table class="data-table" id="guestTable"></table>
+        </div>
+        <div class="guest-card-list" id="guestCardList"></div>
+      </div>
+    </div>
+
+    <!-- ============ VIEW: SEATING ============ -->
+    <div class="app-view" data-view="seating" id="view-seating">
+      <div class="app-view-head">
+        <div><h2>Seating chart</h2><p>Assign confirmed guests to tables — reads straight from your guest list.</p></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn--ghost" onclick="DASH.toggleSuggestSeating()">Suggest seating</button>
+          <button class="btn btn--black" onclick="DASH.toggleTableForm()">Add table</button>
+        </div>
+      </div>
+
+      <div class="guest-stat-row" id="seatingStatRow"></div>
+
+      <div class="app-card" style="margin-bottom:20px;">
+        <div id="seatingProgressLine" style="font-size:0.95rem; margin-bottom:10px;"></div>
+        <div class="budget-bar-track" style="height:8px;"><div class="budget-bar-fill" id="seatingProgressBar" style="width:0%;"></div></div>
+      </div>
+
+      <div class="alert-list" id="seatingWarnings"></div>
+
+      <div class="app-card form-panel" id="tableFormPanel" style="display:none; margin-bottom:20px;">
+        <div class="form-grid" id="tableFormFields"></div>
+        <div class="form-actions">
+          <button class="btn btn--black" onclick="DASH.saveTableForm()">Save table</button>
+          <button class="btn btn--ghost" onclick="DASH.cancelTableForm()">Cancel</button>
+        </div>
+      </div>
+
+      <div class="app-card form-panel" id="suggestSeatingPanel" style="display:none; margin-bottom:20px;">
+        <h3>Suggested seating</h3>
+        <div id="suggestSeatingBody"></div>
+      </div>
+
+      <div class="app-card" style="margin-bottom:20px;" id="unassignedCard">
+        <h3 id="unassignedHeading">Unassigned guests</h3>
+        <div id="unassignedGuestList"></div>
+      </div>
+
+      <div class="app-card" style="margin-bottom:20px;">
+        <div class="app-view-head" style="margin-bottom:14px;">
+          <h3 style="margin:0;">Catering requirements</h3>
+          <button class="btn btn--ghost" onclick="DASH.exportCateringList()">Download catering guest list</button>
+        </div>
+        <div class="dietary-rows" id="seatingDietaryRows"></div>
+      </div>
+
+      <div class="table-grid" id="tableGrid"></div>
+    </div>
+
+    <!-- ============ VIEW: TABLE DETAIL ============ -->
+    <div class="app-view" data-view="table-detail" id="view-table-detail">
+      <a href="#seating" class="app-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Back to seating chart</a>
+      <div class="app-view-head" id="tableDetailHead"></div>
+      <div class="app-card" style="margin-bottom:20px;">
+        <h3>Edit table</h3>
+        <div class="form-grid" id="tableEditFields"></div>
+        <div class="form-actions" style="margin-top:12px;">
+          <button class="btn btn--ghost" id="saveTableDetailBtn">Save table</button>
+          <a href="#" class="row-action" id="deleteTableLink" style="margin-left:auto;">Delete table</a>
+        </div>
+      </div>
+      <div class="app-card">
+        <h3>Guests</h3>
+        <div id="tableDetailGuestList"></div>
+        <div class="table-assign-row" style="margin-top:14px;">
+          <select id="tableDetailAssignSelect"></select>
+          <button class="btn btn--ghost" id="tableDetailAssignBtn">Add guest</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ VIEW: TIMELINE ============ -->
+    <div class="app-view" data-view="timeline" id="view-timeline">
+      <div class="app-view-head">
+        <div><h2>Wedding timeline</h2><p>Your planning checklist, mapped against how far out your wedding is.</p></div>
+      </div>
+      <div class="app-card" id="milestoneList"></div>
+    </div>
+
+    <!-- ============ VIEW: CHECKLIST ============ -->
+    <div class="app-view" data-view="checklist" id="view-checklist">
+      <div class="app-view-head">
+        <div><h2 id="checklistViewTitle">Checklist</h2><p>Everything on your list, in one place.</p></div>
+        <button class="btn btn--ghost" onclick="DASH.toggleFullChecklistForm()">Add task</button>
+      </div>
+      <div class="app-card form-panel" id="fullChecklistFormPanel" style="display:none; margin-bottom:20px;">
+        <div class="form-grid cols-3" id="fullChecklistFormFields"></div>
+        <div class="form-actions">
+          <button class="btn btn--black" onclick="DASH.saveFullChecklistForm()">Add task</button>
+          <button class="btn btn--ghost" onclick="DASH.cancelFullChecklistForm()">Cancel</button>
+        </div>
+      </div>
+      <div class="app-card">
+        <ul class="checklist-app" id="fullChecklistList"></ul>
+      </div>
+    </div>
+
+    <!-- ============ VIEW: APPOINTMENTS ============ -->
+    <div class="app-view" data-view="appointments" id="view-appointments">
+      <div class="app-view-head">
+        <div><h2>Appointments</h2><p>Every tasting, fitting, and vendor meeting on your calendar.</p></div>
+        <button class="btn btn--black" onclick="DASH.toggleAppointmentForm()">Add appointment</button>
+      </div>
+      <div class="app-card form-panel" id="appointmentFormPanel" style="display:none; margin-bottom:20px;">
+        <div class="form-grid cols-3" id="appointmentFormFields"></div>
+        <div class="form-actions">
+          <button class="btn btn--black" onclick="DASH.saveAppointmentForm()">Save appointment</button>
+          <button class="btn btn--ghost" onclick="DASH.cancelAppointmentForm()">Cancel</button>
+        </div>
+      </div>
+      <div class="app-card">
+        <div class="data-table-wrap">
+          <table class="data-table" id="appointmentTable"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ VIEW: MESSAGES ============ -->
+    <div class="app-view" data-view="messages" id="view-messages">
+      <div class="app-view-head">
+        <div><h2>Messages</h2><p>One thread per vendor.</p></div>
+      </div>
+      <div class="messages-shell">
+        <div class="thread-list" id="threadList"></div>
+        <div class="thread-pane" id="threadPane">
+          <div class="empty-state">Select a conversation to see messages.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ VIEW: WEDDING DAY MODE ============ -->
+    <div class="app-view" data-view="weddingday" id="view-weddingday">
+      <div class="app-view-head">
+        <div><h2>Wedding day mode</h2><p>Your hour-by-hour run of show, and everyone you might need to call.</p></div>
+      </div>
+      <div class="wedding-day-banner" id="weddingDayBanner"></div>
+      <div class="app-card" style="margin-bottom:20px;">
+        <h3>Where is someone sitting?</h3>
+        <input type="text" id="seatFinderInput" placeholder="Search a guest's name…" style="width:100%; padding:12px 14px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.95rem; margin-top:12px;">
+        <div id="seatFinderResults" style="margin-top:10px;"></div>
+      </div>
+      <div class="app-grid">
+        <div class="app-card">
+          <div class="app-view-head" style="margin-bottom:14px;">
+            <h3 style="margin:0;">Run of show</h3>
+            <button class="btn btn--ghost" onclick="DASH.toggleTimelineItemForm()">Add item</button>
+          </div>
+          <div class="form-panel" id="timelineItemFormPanel" style="display:none; margin-bottom:16px;">
+            <div class="form-grid" id="timelineItemFormFields"></div>
+            <div class="form-actions">
+              <button class="btn btn--black" onclick="DASH.saveTimelineItemForm()">Save</button>
+              <button class="btn btn--ghost" onclick="DASH.cancelTimelineItemForm()">Cancel</button>
+            </div>
+          </div>
+          <div class="wd-timeline" id="wdTimelineList"></div>
+        </div>
+        <div class="app-card">
+          <div class="app-view-head" style="margin-bottom:14px;">
+            <h3 style="margin:0;">Important contacts</h3>
+            <button class="btn btn--ghost" onclick="DASH.toggleContactForm()">Add contact</button>
+          </div>
+          <div class="form-panel" id="contactFormPanel" style="display:none; margin-bottom:16px;">
+            <div class="form-grid" id="contactFormFields"></div>
+            <div class="form-actions">
+              <button class="btn btn--black" onclick="DASH.saveContactForm()">Save</button>
+              <button class="btn btn--ghost" onclick="DASH.cancelContactForm()">Cancel</button>
+            </div>
+          </div>
+          <div id="contactList"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="calculator.js"></script>
+<script src="vendor-directory.js"></script>
+<script src="wedding-data.js"></script>
+<script src="dashboard.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

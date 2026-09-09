@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in — Vow &amp; Co.</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="wrap wizard-header">
+  <a href="index.html" class="brand">VOW &amp; CO.</a>
+  <a href="index.html" class="loginlink" style="color:var(--muted); font-size:0.85rem;">Back to homepage</a>
+</header>
+
+<div class="wrap wizard-body" style="max-width:460px;">
+  <div class="results-summary" style="margin-bottom:36px;">
+    <div class="eyebrow">WELCOME BACK</div>
+    <h2>Log in to Vow &amp; Co.</h2>
+  </div>
+
+  <div id="setupNotice" class="wizard-error" style="display:none; margin-bottom:20px;"></div>
+
+  <form id="loginForm" novalidate>
+    <div class="wizard-field">
+      <input type="email" id="fieldEmail" placeholder="Email address" required autocomplete="email">
+    </div>
+    <div class="wizard-field">
+      <input type="password" id="fieldPassword" placeholder="Password" required autocomplete="current-password">
+    </div>
+    <div class="wizard-error" id="formError"></div>
+    <div class="wizard-nav" style="margin-top:24px;">
+      <button type="submit" class="btn btn--black" id="submitBtn" style="width:100%; justify-content:center;">Log in</button>
+    </div>
+  </form>
+
+  <p style="text-align:center; margin-top:24px; font-size:0.88rem; color:var(--muted);">
+    <a href="reset-password.html" style="text-decoration:underline; color:var(--black);">Forgot your password?</a>
+  </p>
+  <p style="text-align:center; margin-top:12px; font-size:0.88rem; color:var(--muted);">
+    New to Vow &amp; Co.? <a href="signup.html" style="text-decoration:underline; color:var(--black);">Create an account</a>
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/auth.js"></script>
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const redirect = params.get('redirect') || 'dashboard.html';
+  const form = document.getElementById('loginForm');
+  const errEl = document.getElementById('formError');
+  const setupNotice = document.getElementById('setupNotice');
+  const btn = document.getElementById('submitBtn');
+
+  window.VOWSUPA.ready.then(function () {
+    if (!window.VOWSUPA.configured) {
+      setupNotice.textContent = "This site isn't connected to Supabase yet — copy .env.example to .env and fill in your project URL and publishable key, then reload.";
+      setupNotice.style.display = 'block';
+    }
+  });
+
+  // Already signed in? Skip straight to where they were headed.
+  VOWAUTH.getSession().then(function (result) {
+    if (result.data) window.location.href = redirect;
+  });
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    errEl.style.display = 'none';
+    const email = document.getElementById('fieldEmail').value.trim();
+    const password = document.getElementById('fieldPassword').value;
+    if (!email || !password) {
+      errEl.textContent = 'Enter your email and password.';
+      errEl.style.display = 'block';
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Logging in…';
+    const result = await VOWAUTH.signIn({ email: email, password: password });
+    btn.disabled = false;
+    btn.textContent = 'Log in';
+    if (result.error) {
+      errEl.textContent = result.error.message || 'Could not log in — check your details and try again.';
+      errEl.style.display = 'block';
+      return;
+    }
+    window.location.href = redirect;
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create your account — Vow &amp; Co.</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="wrap wizard-header">
+  <a href="index.html" class="brand">VOW &amp; CO.</a>
+  <a href="index.html" class="loginlink" style="color:var(--muted); font-size:0.85rem;">Back to homepage</a>
+</header>
+
+<div class="wrap wizard-body" style="max-width:460px;">
+  <div class="results-summary" style="margin-bottom:36px;">
+    <div class="eyebrow">CREATE YOUR FREE ACCOUNT</div>
+    <h2 id="pageHeading">Save your wedding plan</h2>
+    <p class="line" id="pageSub">No credit card, no obligation — just your plan, ready whenever you need it.</p>
+  </div>
+
+  <div id="setupNotice" class="wizard-error" style="display:none; margin-bottom:20px;"></div>
+
+  <div id="confirmNotice" style="display:none; background:var(--offwhite); border:1px solid var(--line); padding:18px 20px; font-size:0.9rem; margin-bottom:24px;">
+    We've sent a confirmation link to your email. Click it, then <a href="login.html" style="text-decoration:underline; color:var(--black);">log in</a> to see your plan.
+  </div>
+
+  <form id="signupForm" novalidate>
+    <div class="signup-row">
+      <input type="text" id="fieldFirst" placeholder="Your first name" required autocomplete="given-name">
+      <input type="text" id="fieldPartner" placeholder="Partner's first name (optional)" autocomplete="off">
+    </div>
+    <div class="wizard-field">
+      <input type="email" id="fieldEmail" placeholder="Email address" required autocomplete="email" style="width:100%; padding:14px 16px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.95rem;">
+    </div>
+    <div class="wizard-field">
+      <input type="password" id="fieldPassword" placeholder="Create a password (min. 6 characters)" required minlength="6" autocomplete="new-password" style="width:100%; padding:14px 16px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.95rem;">
+    </div>
+    <div class="wizard-error" id="formError"></div>
+    <div class="wizard-nav" style="margin-top:24px;">
+      <button type="submit" class="btn btn--black" id="submitBtn" style="width:100%; justify-content:center;">Create my free account</button>
+    </div>
+  </form>
+
+  <p style="text-align:center; margin-top:24px; font-size:0.88rem; color:var(--muted);">
+    Already have an account? <a href="login.html" style="text-decoration:underline; color:var(--black);">Log in</a>
+  </p>
+  <p style="text-align:center; margin-top:12px; font-size:0.82rem; color:var(--muted);" id="skipLine"></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="calculator.js"></script>
+<script src="wedding-data.js"></script>
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const wizardParams = {
+    date: params.get('date') || '',
+    location: params.get('location') || '',
+    guests: Number(params.get('guests')) || 0,
+    budget: Number(params.get('budget')) || 0,
+    style: params.get('style') || ''
+  };
+  const hasWizardPlan = !!(wizardParams.date || wizardParams.location || wizardParams.guests || wizardParams.budget || wizardParams.style);
+
+  if (hasWizardPlan) {
+    document.getElementById('pageHeading').textContent = 'Save your wedding plan';
+    document.getElementById('skipLine').innerHTML = 'Not ready for an account? <a href="dashboard.html?' + params.toString() + '" style="text-decoration:underline; color:var(--black);">Continue without one — saved on this device only</a>.';
+  } else {
+    document.getElementById('skipLine').remove();
+  }
+  if (params.get('name')) document.getElementById('fieldFirst').value = params.get('name');
+  if (params.get('partner')) document.getElementById('fieldPartner').value = params.get('partner');
+  if (params.get('email')) document.getElementById('fieldEmail').value = params.get('email');
+
+  const form = document.getElementById('signupForm');
+  const errEl = document.getElementById('formError');
+  const setupNotice = document.getElementById('setupNotice');
+  const confirmNotice = document.getElementById('confirmNotice');
+  const btn = document.getElementById('submitBtn');
+
+  window.VOWSUPA.ready.then(function () {
+    if (!window.VOWSUPA.configured) {
+      setupNotice.textContent = "This site isn't connected to Supabase yet — copy .env.example to .env and fill in your project URL and publishable key, then reload.";
+      setupNotice.style.display = 'block';
+    }
+  });
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    errEl.style.display = 'none';
+    const first = document.getElementById('fieldFirst').value.trim();
+    const partner = document.getElementById('fieldPartner').value.trim();
+    const email = document.getElementById('fieldEmail').value.trim();
+    const password = document.getElementById('fieldPassword').value;
+    if (!first || !email || !password) {
+      errEl.textContent = 'Please fill in your name, email, and a password.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (password.length < 6) {
+      errEl.textContent = 'Your password needs to be at least 6 characters.';
+      errEl.style.display = 'block';
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Creating your account…';
+
+    const result = await VOWAUTH.signUp({ email: email, password: password, firstName: first, lastName: partner });
+    if (result.error) {
+      btn.disabled = false;
+      btn.textContent = 'Create my free account';
+      errEl.textContent = result.error.message || 'Something went wrong creating your account. Please try again.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    if (result.data.needsEmailConfirmation) {
+      form.style.display = 'none';
+      confirmNotice.style.display = 'block';
+      return;
+    }
+
+    // Session is live immediately (email confirmation is off on this
+    // project) — create the profile-owned wedding right now from whatever
+    // the plan wizard collected, then go straight to the dashboard.
+    try {
+      const profileResult = await VOWAUTH.getProfile();
+      const profile = profileResult.data;
+      if (profile) {
+        await VOWREMOTE.createWedding(profile.id, {
+          name: first,
+          partner: partner,
+          date: wizardParams.date,
+          location: wizardParams.location,
+          guests: wizardParams.guests,
+          budget: wizardParams.budget,
+          style: wizardParams.style
+        });
+      }
+    } catch (err) {
+      console.error('[Vow & Co.] Could not create wedding after signup:', err);
+      btn.disabled = false;
+      btn.textContent = 'Create my free account';
+      errEl.textContent = 'Your account was created, but we could not save your wedding plan yet. Try logging in from the dashboard.';
+      errEl.style.display = 'block';
+      window.location.href = 'login.html';
+      return;
+    }
+
+    window.location.href = 'dashboard.html';
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build My Wedding Plan — Vow &amp; Co.</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="wrap wizard-header">
+  <a href="index.html" class="brand">VOW &amp; CO.</a>
+  <a href="index.html" class="loginlink" style="color:var(--muted); font-size:0.85rem;">Save &amp; exit</a>
+</header>
+<div class="wizard-progress-track"><div class="wizard-progress-fill" id="progressFill" style="width:0%"></div></div>
+
+<div class="wrap wizard-body">
+
+  <!-- STEP 0: DATE -->
+  <div class="wizard-screen" data-screen="0">
+    <div class="wizard-step-label">Step 1 of 5</div>
+    <h2 class="wizard-question">When are you getting married?</h2>
+    <div class="wizard-field">
+      <input type="date" id="fieldDate">
+      <div class="wizard-error" id="errorDate">Please choose a date in the future.</div>
+    </div>
+    <div class="wizard-nav">
+      <span class="spacer"></span>
+      <button class="btn btn--black" onclick="goNext(0)">Next</button>
+    </div>
+  </div>
+
+  <!-- STEP 1: LOCATION -->
+  <div class="wizard-screen" data-screen="1" style="display:none;">
+    <div class="wizard-step-label">Step 2 of 5</div>
+    <h2 class="wizard-question">Where are you getting married?</h2>
+    <div class="wizard-field">
+      <select id="fieldLocation">
+        <option value="" disabled selected>Select a location</option>
+        <option>Sydney</option>
+        <option>Melbourne</option>
+        <option>Brisbane</option>
+        <option>Perth</option>
+        <option>Adelaide</option>
+        <option>Gold Coast</option>
+        <option>Canberra</option>
+        <option>Hobart</option>
+        <option>Byron Bay</option>
+        <option>Other / regional</option>
+      </select>
+      <div class="wizard-error" id="errorLocation">Please choose a location.</div>
+    </div>
+    <div class="wizard-nav">
+      <button class="btn btn--ghost" onclick="goBack(1)">Back</button>
+      <button class="btn btn--black" onclick="goNext(1)">Next</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: GUESTS -->
+  <div class="wizard-screen" data-screen="2" style="display:none;">
+    <div class="wizard-step-label">Step 3 of 5</div>
+    <h2 class="wizard-question">How many guests are you expecting?</h2>
+    <div class="wizard-slider-value" id="guestsValue">120 guests</div>
+    <div class="wizard-field">
+      <input type="range" id="fieldGuests" min="10" max="400" step="5" value="120">
+    </div>
+    <div class="wizard-nav">
+      <button class="btn btn--ghost" onclick="goBack(2)">Back</button>
+      <button class="btn btn--black" onclick="goNext(2)">Next</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: BUDGET -->
+  <div class="wizard-screen" data-screen="3" style="display:none;">
+    <div class="wizard-step-label">Step 4 of 5</div>
+    <h2 class="wizard-question">What's your wedding budget?</h2>
+    <div class="wizard-slider-value" id="budgetValue">$45,000</div>
+    <div class="wizard-field">
+      <input type="range" id="fieldBudget" min="5000" max="150000" step="1000" value="45000">
+    </div>
+    <div class="wizard-nav">
+      <button class="btn btn--ghost" onclick="goBack(3)">Back</button>
+      <button class="btn btn--black" onclick="goNext(3)">Next</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: STYLE -->
+  <div class="wizard-screen" data-screen="4" style="display:none;">
+    <div class="wizard-step-label">Step 5 of 5</div>
+    <h2 class="wizard-question">What's your wedding style?</h2>
+    <div class="wizard-field">
+      <div class="wizard-style-grid" id="styleGrid"></div>
+      <div class="wizard-error" id="errorStyle">Please choose a style.</div>
+    </div>
+    <div class="wizard-nav">
+      <button class="btn btn--ghost" onclick="goBack(4)">Back</button>
+      <button class="btn btn--black" onclick="showResults()">See my plan</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="wizard-screen" data-screen="results" style="display:none;">
+    <div class="results-summary">
+      <div class="eyebrow">Your wedding plan is ready</div>
+      <h2 id="resultsSummary">Sydney · 120 guests · $45,000 · March 2027</h2>
+      <p class="line">Here's a first look at what Vow &amp; Co. has put together for you.</p>
+    </div>
+
+    <div class="results-grid">
+      <div class="results-cell"><div class="label">Personalised budget</div><div class="num" id="resBudget">$45,000</div></div>
+      <div class="results-cell"><div class="label">Wedding timeline</div><div class="num" id="resTimeline">12 months</div></div>
+      <div class="results-cell"><div class="label">Recommended vendors</div><div class="num" id="resVendors">126</div></div>
+      <div class="results-cell"><div class="label">Venue suggestions</div><div class="num" id="resVenues">8</div></div>
+      <div class="results-cell"><div class="label">Planning checklist</div><div class="num" id="resTasks">48 tasks</div></div>
+      <div class="results-cell"><div class="label">Next step</div><div class="num" id="resNext" style="font-size:1.05rem;">Book your venue</div></div>
+    </div>
+
+    <div class="app-card" style="margin-bottom:40px;">
+      <h3>Your budget, broken down</h3>
+      <div class="budget-rows" id="resBreakdown"></div>
+    </div>
+
+    <div class="signup-form">
+      <h3>Create your free account to save your wedding plan</h3>
+      <p>No credit card, no obligation — just your plan, ready whenever you need it.</p>
+      <div class="signup-row">
+        <input type="text" id="signupFirst" placeholder="Your first name">
+        <input type="text" id="signupPartner" placeholder="Partner's first name (optional)">
+      </div>
+      <input type="email" id="signupEmail" placeholder="Email address">
+      <button class="btn btn--black" onclick="createAccount()">Create my free account</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="calculator.js"></script>
+<script>
+  const styles = [
+    { key: 'classic', label: 'Classic', icon: '<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>' },
+    { key: 'modern', label: 'Modern', icon: '<rect x="4" y="4" width="16" height="16"/>' },
+    { key: 'romantic', label: 'Romantic', icon: '<path d="M12 20s-7-4.5-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 5c-2.3 4.5-9.3 9-9.3 9Z"/>' },
+    { key: 'coastal', label: 'Coastal', icon: '<path d="M3 17c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2M3 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/>' },
+    { key: 'rustic', label: 'Rustic', icon: '<path d="M4 20V10l8-6 8 6v10"/><path d="M9 20v-6h6v6"/>' },
+    { key: 'luxury', label: 'Luxury', icon: '<path d="M4 8l4 8h8l4-8-6 3-2-5-2 5-6-3Z"/>' },
+    { key: 'minimal', label: 'Minimal', icon: '<line x1="4" y1="12" x2="20" y2="12"/>' },
+    { key: 'garden', label: 'Garden', icon: '<circle cx="12" cy="8" r="3"/><path d="M12 11c-3 3-1 6 0 9 1-3 3-6 0-9Z"/>' }
+  ];
+
+  const params = new URLSearchParams(window.location.search);
+  const data = {
+    date: '',
+    location: params.get('location') || '',
+    guests: Number(params.get('guests')) || 120,
+    budget: Number(params.get('budget')) || 45000,
+    style: params.get('style') || ''
+  };
+
+  let step = 0;
+  const totalQuestionSteps = 5;
+
+  function renderStyleGrid() {
+    const grid = document.getElementById('styleGrid');
+    grid.innerHTML = styles.map(function (s) {
+      const active = s.key === data.style ? ' active' : '';
+      return '<button type="button" class="style-card' + active + '" data-style="' + s.key + '" onclick="selectStyle(\'' + s.key + '\')">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.4">' + s.icon + '</svg>' +
+        '<span>' + s.label + '</span></button>';
+    }).join('');
+  }
+
+  function selectStyle(key) {
+    data.style = key;
+    document.querySelectorAll('.style-card').forEach(function (c) {
+      c.classList.toggle('active', c.dataset.style === key);
+    });
+  }
+
+  function updateProgress() {
+    const pct = (step / totalQuestionSteps) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+  }
+
+  function showScreen(name) {
+    document.querySelectorAll('.wizard-screen').forEach(function (el) {
+      el.style.display = String(el.dataset.screen) === String(name) ? '' : 'none';
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goNext(current) {
+    if (current === 0) {
+      const val = document.getElementById('fieldDate').value;
+      const days = VOWCO.daysUntil(val);
+      if (!val || days === null || days < 0) {
+        document.getElementById('errorDate').style.display = 'block';
+        return;
+      }
+      document.getElementById('errorDate').style.display = 'none';
+      data.date = val;
+    }
+    if (current === 1) {
+      const val = document.getElementById('fieldLocation').value;
+      if (!val) {
+        document.getElementById('errorLocation').style.display = 'block';
+        return;
+      }
+      document.getElementById('errorLocation').style.display = 'none';
+      data.location = val;
+    }
+    if (current === 2) {
+      data.guests = Number(document.getElementById('fieldGuests').value);
+    }
+    if (current === 3) {
+      data.budget = Number(document.getElementById('fieldBudget').value);
+    }
+    step = current + 1;
+    showScreen(step);
+    updateProgress();
+  }
+
+  function goBack(current) {
+    step = current - 1;
+    showScreen(step);
+    updateProgress();
+  }
+
+  function showResults() {
+    if (!data.style) {
+      document.getElementById('errorStyle').style.display = 'block';
+      return;
+    }
+    document.getElementById('errorStyle').style.display = 'none';
+    step = totalQuestionSteps;
+    updateProgress();
+
+    const months = VOWCO.monthsUntil(data.date);
+    const dateLong = VOWCO.formatDateLong(data.date);
+    const tasks = VOWCO.estimateTasks(data.guests);
+    const vendors = VOWCO.estimateVendors(data.guests, data.budget);
+    const venues = VOWCO.estimateVenueShortlist(data.budget);
+
+    let nextStep = 'Book your venue';
+    if (months !== null) {
+      if (months <= 2) nextStep = 'Finalise seating & confirm vendors';
+      else if (months <= 5) nextStep = 'Send invitations';
+      else if (months <= 9) nextStep = 'Book photographer & caterer';
+      else nextStep = 'Book your venue';
+    }
+
+    document.getElementById('resultsSummary').textContent =
+      data.location + ' · ' + data.guests + ' guests · ' + VOWCO.formatCurrency(data.budget) + (dateLong ? ' · ' + dateLong : '');
+    document.getElementById('resBudget').textContent = VOWCO.formatCurrency(data.budget);
+    document.getElementById('resTimeline').textContent = (months !== null ? months : '—') + ' months';
+    document.getElementById('resVendors').textContent = vendors;
+    document.getElementById('resVenues').textContent = venues;
+    document.getElementById('resTasks').textContent = tasks + ' tasks';
+    document.getElementById('resNext').textContent = nextStep;
+
+    const breakdown = VOWCO.budgetBreakdown(data.budget);
+    document.getElementById('resBreakdown').innerHTML = breakdown.map(function (b) {
+      return '<div class="budget-row"><div class="top"><span class="cat">' + b.label + '</span><span class="amt">' + VOWCO.formatCurrency(b.amount) + '</span></div>' +
+        '<div class="budget-bar-track"><div class="budget-bar-fill" style="width:100%"></div></div></div>';
+    }).join('');
+
+    showScreen('results');
+  }
+
+  function createAccount() {
+    const first = document.getElementById('signupFirst').value.trim() || 'there';
+    const partner = document.getElementById('signupPartner').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const qs = new URLSearchParams({
+      name: first,
+      partner: partner,
+      email: email,
+      date: data.date,
+      location: data.location,
+      guests: data.guests,
+      budget: data.budget,
+      style: data.style
+    });
+    window.location.href = 'signup.html?' + qs.toString();
+  }
+
+  // Initialise from any pre-filled values (e.g. from the homepage calculator)
+  document.getElementById('fieldGuests').value = data.guests;
+  document.getElementById('guestsValue').textContent = data.guests + ' guests';
+  document.getElementById('fieldBudget').value = data.budget;
+  document.getElementById('budgetValue').textContent = VOWCO.formatCurrency(data.budget);
+  if (data.location) document.getElementById('fieldLocation').value = data.location;
+
+  document.getElementById('fieldGuests').addEventListener('input', function (e) {
+    document.getElementById('guestsValue').textContent = e.target.value + ' guests';
+  });
+  document.getElementById('fieldBudget').addEventListener('input', function (e) {
+    document.getElementById('budgetValue').textContent = VOWCO.formatCurrency(e.target.value);
+  });
+
+  renderStyleGrid();
+  updateProgress();
+</script>
+<script src="script.js"></script>
+</body>
+</html>
