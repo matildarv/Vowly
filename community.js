@@ -71,7 +71,7 @@
     el.innerHTML = '<label style="font-size:0.78rem; color:var(--muted); display:block; margin-bottom:8px;">Photos (up to ' + VOWCOMMUNITY.MAX_PHOTOS + ')</label>' +
       '<div class="photo-upload-grid">' + thumbs +
       (canAddMore ? '<label class="photo-add-btn">+ Add<input type="file" accept="image/*" multiple style="display:none;" id="' + containerId + 'Input"></label>' : '') +
-      '</div><div id="' + containerId + 'Error" style="color:#a33; font-size:0.8rem; margin-top:8px;"></div>';
+      '</div><div id="' + containerId + 'Error" style="color:var(--color-error); font-size:0.8rem; margin-top:8px;"></div>';
 
     el.querySelectorAll('.remove-photo').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -163,7 +163,7 @@
       '<div class="app-card" style="margin-top:32px;"><h3>' + t.replies.length + ' repl' + (t.replies.length === 1 ? 'y' : 'ies') + '</h3>' + repliesHtml + '</div>' +
       '<div class="app-card" style="margin-top:20px;"><h3>Add a reply</h3>' +
       '<div class="form-field"><label>Your name</label><input type="text" id="replyName" value="' + esc(VOWCOMMUNITY.getMe()) + '"></div>' +
-      '<div class="form-field" style="margin-top:12px;"><label>Reply</label><textarea id="replyText" style="width:100%; min-height:90px; padding:12px 14px; border:1px solid var(--line); font-family:\'Inter\',sans-serif; font-size:0.92rem;"></textarea></div>' +
+      '<div class="form-field" style="margin-top:12px;"><label>Reply</label><textarea id="replyText" style="width:100%; min-height:90px; padding:12px 14px; font-size:0.92rem;"></textarea></div>' +
       '<div class="form-actions" style="margin-top:12px;"><button class="btn btn--black" id="submitReplyBtn">Post reply</button></div>' +
       '</div>';
 
@@ -187,7 +187,7 @@
       }).join('') + '</select></div>' +
       '<div class="form-field"><label>Your name</label><input type="text" id="ntName" value="' + esc(VOWCOMMUNITY.getMe()) + '"></div>' +
       '<div class="form-field span-2"><label>Title</label><input type="text" id="ntTitle" placeholder="What\'s your question or topic?"></div>' +
-      '<div class="form-field span-2"><label>Details</label><textarea id="ntBody" style="width:100%; min-height:110px; padding:12px 14px; border:1px solid var(--line); font-family:\'Inter\',sans-serif; font-size:0.92rem;"></textarea></div>';
+      '<div class="form-field span-2"><label>Details</label><textarea id="ntBody" style="width:100%; min-height:110px; padding:12px 14px; font-size:0.92rem;"></textarea></div>';
     renderPhotoUploadWidget('newThreadPhotoUpload', newThreadPhotos);
   }
 
@@ -261,7 +261,7 @@
       '<div>' +
       '<div class="eyebrow">' + esc(l.category.toUpperCase()) + '</div>' +
       '<h2>' + esc(l.title) + '</h2>' +
-      '<div style="font-family:\'Bodoni Moda\',serif; font-size:1.8rem; margin:14px 0;">' + VOWCO.formatCurrency(l.price) + '</div>' +
+      '<div style="font-family:var(--font-display); font-size:1.8rem; margin:14px 0;">' + VOWCO.formatCurrency(l.price) + '</div>' +
       '<p style="color:var(--muted); font-size:0.88rem; margin-bottom:20px;">Condition: ' + esc(l.condition) + ' · Listed by ' + esc(l.sellerName) + ' · ' + formatWhen(l.createdAt) + '</p>' +
       '<p style="margin-bottom:28px; max-width:50ch;">' + esc(l.description) + '</p>' +
       (l.sellerContact
@@ -282,7 +282,7 @@
       '<div class="form-field"><label>Price (AUD)</label><input type="number" min="0" id="nlPrice"></div>' +
       '<div class="form-field"><label>Your name</label><input type="text" id="nlSellerName" value="' + esc(VOWCOMMUNITY.getMe()) + '"></div>' +
       '<div class="form-field span-2"><label>Contact email</label><input type="email" id="nlContact" placeholder="Buyers will message you here"></div>' +
-      '<div class="form-field span-2"><label>Description</label><textarea id="nlDescription" style="width:100%; min-height:100px; padding:12px 14px; border:1px solid var(--line); font-family:\'Inter\',sans-serif; font-size:0.92rem;"></textarea></div>';
+      '<div class="form-field span-2"><label>Description</label><textarea id="nlDescription" style="width:100%; min-height:100px; padding:12px 14px; font-size:0.92rem;"></textarea></div>';
     renderPhotoUploadWidget('newListingPhotoUpload', newListingPhotos);
   }
 

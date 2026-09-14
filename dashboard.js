@@ -17,15 +17,17 @@
   function showLoadingOverlay() {
     const el = document.createElement('div');
     el.id = 'authLoadingOverlay';
-    el.style.cssText = 'position:fixed; inset:0; background:var(--white); z-index:500; display:flex; align-items:center; justify-content:center; font-family:Inter,sans-serif; color:var(--muted); font-size:0.95rem;';
-    el.textContent = 'Loading your wedding…';
+    el.style.cssText = 'position:fixed; inset:0; background:var(--bg-page); z-index:500; display:flex; align-items:center; justify-content:center; padding:24px;';
+    el.setAttribute('role', 'status');
+    el.innerHTML = '<div class="vow-loading"><div class="skeleton-caption">Loading your wedding…</div>' +
+      '<div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div>';
     document.body.appendChild(el);
     return el;
   }
 
   function showFatalError(message) {
     const el = document.createElement('div');
-    el.style.cssText = 'position:fixed; inset:0; background:var(--white); z-index:500; display:flex; align-items:center; justify-content:center; padding:24px;';
+    el.style.cssText = 'position:fixed; inset:0; background:var(--bg-page); z-index:500; display:flex; align-items:center; justify-content:center; padding:24px;';
     el.innerHTML = '<div style="max-width:420px; text-align:center;"><p style="font-size:1rem; margin-bottom:16px;">' + esc(message) + '</p><button class="btn btn--black" onclick="window.location.reload()">Try again</button></div>';
     document.body.appendChild(el);
   }
@@ -38,7 +40,7 @@
         '<h2 style="margin-bottom:14px;">Your wedding plan is just getting started.</h2>' +
         '<p style="color:var(--muted); margin-bottom:24px;">You\'re signed in, but there\'s no wedding saved on your account yet.</p>' +
         '<button type="button" class="btn btn--black" id="startWeddingBtn">Start my wedding plan</button>' +
-        '<p style="color:#a33; margin-top:16px; font-size:0.85rem; display:none;" id="startWeddingError"></p>' +
+        '<p style="color:var(--color-error); margin-top:16px; font-size:0.85rem; display:none;" id="startWeddingError"></p>' +
         '<p style="color:var(--muted); margin-top:16px; font-size:0.82rem;">You can fill in your date, guest count, budget and style afterward from Wedding details.</p>' +
       '</div>';
     const btn = document.getElementById('startWeddingBtn');
@@ -371,7 +373,7 @@
       stepsList.innerHTML = steps.map(function (t, i) {
         const cta = ctaFor(t);
         return '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:16px 0; border-bottom:1px solid var(--line);">' +
-          '<div><div style="font-family:\'Bodoni Moda\',serif; font-size:1rem; margin-bottom:4px;">0' + (i + 1) + ' — ' + esc(t.title) + '</div>' +
+          '<div><div style="font-family:var(--font-display); font-size:1rem; margin-bottom:4px;">0' + (i + 1) + ' — ' + esc(t.title) + '</div>' +
           '<div style="font-size:0.85rem; color:var(--muted);">' + whyText(t) + '</div></div>' +
           '<a href="' + cta.href + '" class="link" style="white-space:nowrap; text-decoration:underline;">' + cta.label + '</a></div>';
       }).join('');
@@ -843,7 +845,7 @@
       : '<p style="font-size:0.82rem; color:var(--muted); margin-bottom:10px;">This is a draft — nothing is sent until you save it below. There\'s no automatic vendor email yet, so you\'ll still need to reach out yourself.</p>';
     document.getElementById('vendorEnquiryCard').innerHTML =
       '<h3>Enquiry</h3>' + sentNote +
-      '<textarea id="enquiryMessageInput" style="width:100%; min-height:150px; padding:12px 14px; border:1px solid var(--line); font-family:\'Inter\',sans-serif; font-size:0.9rem;">' + esc(message) + '</textarea>' +
+      '<textarea id="enquiryMessageInput" style="width:100%; min-height:150px; padding:12px 14px; font-size:0.9rem;">' + esc(message) + '</textarea>' +
       '<div class="form-actions" style="margin-top:12px;">' +
         '<button type="button" class="btn btn--ghost" id="saveEnquiryDraftBtn">Save draft</button>' +
         '<button type="button" class="btn btn--black" id="sendEnquiryBtn">' + (enquiry.status === 'Sent' ? 'Save enquiry' : 'Save &amp; mark as sent') + '</button>' +
@@ -874,7 +876,7 @@
     document.getElementById('vendorDetailHead').innerHTML =
       '<div><h2>' + esc(v.name) + '</h2><p>' + esc(v.category) + (v.location ? ' · ' + esc(v.location) : '') + ' · ' + (v.quote && v.quote.amount ? VOWCO.formatCurrency(v.quote.amount) : 'Pricing on request') + '</p>' +
       (links.length ? '<p style="margin-top:6px;">' + links.join('') + '</p>' : '') + '</div>' +
-      '<select id="vendorStatusSelect" style="padding:11px 14px; border:1px solid var(--line); font-family:\'Inter\',sans-serif; font-size:0.9rem;">' + vendorStatusOptions(v.status) + '</select>';
+      '<select id="vendorStatusSelect" style="padding:11px 14px; font-size:0.9rem;">' + vendorStatusOptions(v.status) + '</select>';
     document.getElementById('vendorStatusSelect').addEventListener('change', function (e) {
       VOWDATA.setVendorStatus(v.id, e.target.value);
       rerender();
@@ -918,9 +920,9 @@
   function renderQuoteSection(vendorId) {
     const rows = quoteDraft.paymentDates.map(function (pd, idx) {
       return '<li style="flex-wrap:wrap; gap:8px;">' +
-        '<input type="text" class="pd-label" data-idx="' + idx + '" value="' + esc(pd.label) + '" placeholder="Label" style="width:110px; padding:7px 8px; border:1px solid var(--line); font-size:0.82rem;">' +
-        '<input type="date" class="pd-date" data-idx="' + idx + '" value="' + esc(pd.date) + '" style="padding:7px 8px; border:1px solid var(--line); font-size:0.82rem;">' +
-        '<input type="number" min="0" class="pd-amount" data-idx="' + idx + '" value="' + esc(pd.amount) + '" style="width:90px; padding:7px 8px; border:1px solid var(--line); font-size:0.82rem;">' +
+        '<input type="text" class="pd-label" data-idx="' + idx + '" value="' + esc(pd.label) + '" placeholder="Label" style="width:110px; padding:7px 8px; font-size:0.82rem;">' +
+        '<input type="date" class="pd-date" data-idx="' + idx + '" value="' + esc(pd.date) + '" style="padding:7px 8px; font-size:0.82rem;">' +
+        '<input type="number" min="0" class="pd-amount" data-idx="' + idx + '" value="' + esc(pd.amount) + '" style="width:90px; padding:7px 8px; font-size:0.82rem;">' +
         '<span style="margin-left:auto; display:flex; align-items:center; gap:10px;"><label style="font-size:0.8rem; color:var(--muted); display:flex; align-items:center; gap:5px;"><input type="checkbox" data-idx="' + idx + '" class="pd-paid" ' + (pd.paid ? 'checked' : '') + '> Paid</label> <a href="#" class="row-action pd-remove" data-idx="' + idx + '">Remove</a></span></li>';
     }).join('');
 
@@ -1305,7 +1307,7 @@
     function finish(csvText) {
       const result = VOWDATA.importGuestsFromCSV(csvText);
       resultEl.style.display = 'block';
-      resultEl.style.color = result && result.added ? 'var(--muted)' : '#a33';
+      resultEl.style.color = result && result.added ? 'var(--muted)' : 'var(--color-error)';
       resultEl.textContent = result && result.added ? 'Added ' + result.added + ' guest' + (result.added === 1 ? '' : 's') + '.' : 'No guests found — check the file has a First name column.';
       if (result && result.added) { document.getElementById('importGuestsText').value = ''; if (fileInput) fileInput.value = ''; rerender(); }
     }

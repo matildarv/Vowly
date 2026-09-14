@@ -239,7 +239,7 @@
       (enquiry.status === 'Sent'
         ? '<p style="font-size:0.82rem; color:var(--muted); margin-bottom:10px;">Enquiry saved. Vow &amp; Co. doesn\'t email vendors automatically yet — reach out via the links above, and track their reply from Messages in your dashboard.</p>'
         : '<p style="font-size:0.82rem; color:var(--muted); margin-bottom:10px;">Edit this message, then save it — it will be added to My Vendors so you can track this enquiry.</p>') +
-      '<textarea id="vpEnquiryMessage" style="width:100%; min-height:140px; padding:12px 14px; border:1px solid var(--line); font-family:\'Inter\',sans-serif; font-size:0.9rem;">' + esc(message) + '</textarea>' +
+      '<textarea id="vpEnquiryMessage" style="width:100%; min-height:140px; padding:12px 14px; font-size:0.9rem;">' + esc(message) + '</textarea>' +
       '<div class="form-actions" style="margin-top:12px;"><button type="button" class="btn btn--black" id="vpSendEnquiryBtn">' + (enquiry.status === 'Sent' ? 'Save enquiry' : 'Save &amp; mark as sent') + '</button></div>' +
       '</div>';
     document.getElementById('vpSendEnquiryBtn').addEventListener('click', function () {

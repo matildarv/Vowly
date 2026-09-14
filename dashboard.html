@@ -11,7 +11,7 @@
 <div class="app-shell">
   <aside class="app-sidebar" id="appSidebar">
     <div style="display:flex; align-items:center; justify-content:space-between;">
-      <a href="index.html" class="brand">VOW &amp; CO.</a>
+      <a href="index.html" class="brand"><span class="brand-mark" aria-hidden="true">V</span>Vowly</a>
       <button class="app-mobile-toggle" id="mobileNavToggle" aria-label="Open menu"><span></span></button>
     </div>
 
@@ -78,17 +78,17 @@
         <p id="prioritiesNote" style="display:none; font-size:0.85rem; color:var(--muted); font-style:italic; margin-top:8px;"></p>
         <div id="nextStepsList">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:16px 0; border-bottom:1px solid var(--line);">
-            <div><div style="font-family:'Bodoni Moda',serif; font-size:1rem; margin-bottom:4px;">01 — Book your photographer</div>
+            <div><div style="font-family:var(--font-display); font-size:1rem; margin-bottom:4px;">01 — Book your photographer</div>
             <div style="font-size:0.85rem; color:var(--muted);">You have 142 days until your wedding. We recommend booking this within the next 2 weeks.</div></div>
             <a href="vendors.html" class="link" style="white-space:nowrap; text-decoration:underline;">Find photographers</a>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:16px 0; border-bottom:1px solid var(--line);">
-            <div><div style="font-family:'Bodoni Moda',serif; font-size:1rem; margin-bottom:4px;">02 — Confirm final guest numbers</div>
+            <div><div style="font-family:var(--font-display); font-size:1rem; margin-bottom:4px;">02 — Confirm final guest numbers</div>
             <div style="font-size:0.85rem; color:var(--muted);">Your caterer will need final numbers before the wedding.</div></div>
             <a href="#guests" class="link" style="white-space:nowrap; text-decoration:underline;">Manage guest list</a>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:16px 0;">
-            <div><div style="font-family:'Bodoni Moda',serif; font-size:1rem; margin-bottom:4px;">03 — Finalise ceremony readings</div>
+            <div><div style="font-family:var(--font-display); font-size:1rem; margin-bottom:4px;">03 — Finalise ceremony readings</div>
             <div style="font-size:0.85rem; color:var(--muted);">A few readings are still unconfirmed on your checklist.</div></div>
             <a href="#checklist" class="link" style="white-space:nowrap; text-decoration:underline;">View checklist</a>
           </div>
@@ -97,7 +97,7 @@
 
       <div class="app-card" style="margin-bottom:28px;">
         <h3 style="margin-bottom:14px;">Your wedding is <span id="progressPct">47</span>% planned</h3>
-        <div class="budget-bar-track" style="height:8px;"><div class="budget-bar-fill" id="progressBarFill" style="width:47%;"></div></div>
+        <div class="budget-bar-track"><div class="budget-bar-fill" id="progressBarFill" style="width:47%;"></div></div>
         <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:0.85rem; flex-wrap:wrap; gap:8px;">
           <span style="color:var(--muted);" id="progressSub">34 of 72 important tasks complete</span>
           <span id="progressMsg">You're on track for your wedding.</span>
@@ -193,7 +193,7 @@
             <li><span class="box"></span>Order table linens</li>
           </ul>
           <div id="addTaskRow" style="display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); gap:8px;">
-            <input type="text" id="newTaskInput" required placeholder="Add a task…" style="width:100%; padding:10px 12px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.88rem; margin-bottom:8px;">
+            <input type="text" id="newTaskInput" required placeholder="Add a task…" style="width:100%; padding:10px 12px; font-size:0.88rem; margin-bottom:8px;">
             <button class="btn btn--ghost" style="width:100%; justify-content:center;" onclick="DASH.addNewTask()">Add task</button>
           </div>
           <div style="margin-top:16px;"><a href="#checklist" class="link">View full checklist</a></div>
@@ -301,7 +301,7 @@
       </div>
       <div class="app-card" style="margin-bottom:20px;">
         <div id="vendorProgressLine" style="font-size:0.95rem; margin-bottom:10px;"></div>
-        <div class="budget-bar-track" style="height:8px;"><div class="budget-bar-fill" id="vendorProgressBar" style="width:0%;"></div></div>
+        <div class="budget-bar-track"><div class="budget-bar-fill" id="vendorProgressBar" style="width:0%;"></div></div>
       </div>
       <div id="vendorFilterTabs" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;"></div>
       <div class="app-card form-panel" id="vendorFormPanel" style="display:none; margin-bottom:20px;">
@@ -332,7 +332,7 @@
       <div class="app-grid" style="margin-top:20px;">
         <div class="app-card">
           <h3>Notes</h3>
-          <textarea id="vendorNotesInput" style="width:100%; min-height:140px; padding:12px 14px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.9rem;"></textarea>
+          <textarea id="vendorNotesInput" style="width:100%; min-height:140px; padding:12px 14px; font-size:0.9rem;"></textarea>
           <div class="form-actions" style="margin-top:12px;">
             <button class="btn btn--ghost" onclick="DASH.saveVendorDetailNotes()">Save notes</button>
           </div>
@@ -357,7 +357,7 @@
 
       <div class="app-card" style="margin-bottom:20px;">
         <div id="guestProgressLine" style="font-size:0.95rem; margin-bottom:10px;"></div>
-        <div class="budget-bar-track" style="height:8px;"><div class="budget-bar-fill" id="guestProgressBar" style="width:0%;"></div></div>
+        <div class="budget-bar-track"><div class="budget-bar-fill" id="guestProgressBar" style="width:0%;"></div></div>
       </div>
 
       <div class="guest-stat-row" id="guestStatRow"></div>
@@ -371,7 +371,7 @@
         <h3>Import guests</h3>
         <p style="color:var(--muted); font-size:0.86rem; margin-bottom:12px;">Upload a .csv file, or paste CSV text with a header row (First name, Last name, Email, Phone, RSVP, Dietary).</p>
         <input type="file" accept=".csv,text/csv" id="importGuestsFile" style="margin-bottom:10px; display:block;">
-        <textarea id="importGuestsText" placeholder="First name,Last name,Email,Phone,RSVP,Dietary" style="width:100%; min-height:100px; padding:12px 14px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.85rem;"></textarea>
+        <textarea id="importGuestsText" placeholder="First name,Last name,Email,Phone,RSVP,Dietary" style="width:100%; min-height:100px; padding:12px 14px; font-size:0.85rem;"></textarea>
         <p id="importGuestsResult" style="font-size:0.85rem; margin-top:10px; display:none;"></p>
         <div class="form-actions" style="margin-top:12px;">
           <button class="btn btn--black" onclick="DASH.importGuests()">Import</button>
@@ -381,7 +381,7 @@
 
       <div class="app-card form-panel" id="guestFormPanel" style="display:none; margin-bottom:20px;">
         <div id="guestFormFields"></div>
-        <p id="guestFormError" style="color:#a33; font-size:0.85rem; margin-top:12px; display:none;"></p>
+        <p id="guestFormError" style="color:var(--color-error); font-size:0.85rem; margin-top:12px; display:none;"></p>
         <div class="form-actions" style="margin-top:16px;">
           <button class="btn btn--black" onclick="DASH.saveGuestForm()">Save guest</button>
           <button class="btn btn--ghost" onclick="DASH.cancelGuestForm()">Cancel</button>
@@ -390,7 +390,7 @@
       </div>
 
       <div class="app-card" style="margin-bottom:20px;">
-        <input type="text" id="guestSearchInput" placeholder="Search by name, email, or phone…" style="width:100%; padding:11px 14px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.9rem; margin-bottom:14px;">
+        <input type="text" id="guestSearchInput" placeholder="Search by name, email, or phone…" style="width:100%; padding:11px 14px; font-size:0.9rem; margin-bottom:14px;">
         <div class="calc-style-row" id="guestFilterRow"></div>
       </div>
 
@@ -416,7 +416,7 @@
 
       <div class="app-card" style="margin-bottom:20px;">
         <div id="seatingProgressLine" style="font-size:0.95rem; margin-bottom:10px;"></div>
-        <div class="budget-bar-track" style="height:8px;"><div class="budget-bar-fill" id="seatingProgressBar" style="width:0%;"></div></div>
+        <div class="budget-bar-track"><div class="budget-bar-fill" id="seatingProgressBar" style="width:0%;"></div></div>
       </div>
 
       <div class="alert-list" id="seatingWarnings"></div>
@@ -539,7 +539,7 @@
       <div class="wedding-day-banner" id="weddingDayBanner"></div>
       <div class="app-card" style="margin-bottom:20px;">
         <h3>Where is someone sitting?</h3>
-        <input type="text" id="seatFinderInput" placeholder="Search a guest's name…" style="width:100%; padding:12px 14px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.95rem; margin-top:12px;">
+        <input type="text" id="seatFinderInput" placeholder="Search a guest's name…" style="width:100%; padding:12px 14px; font-size:0.95rem; margin-top:12px;">
         <div id="seatFinderResults" style="margin-top:10px;"></div>
       </div>
       <div class="app-grid">

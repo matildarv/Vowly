@@ -24,10 +24,13 @@ For the Supabase-backed features (accounts, persistence) to work, `.env` needs r
 
 ## Visual identity (do not deviate)
 
-Black / white / off-white editorial aesthetic — no bright colors, gradients, or cartoon icons. Defined in `styles.css`:
-- Fonts: `Bodoni Moda` (serif, all headings) + `Inter` (sans, body) — loaded via the `@import` at the top of `styles.css`.
-- CSS variables: `--white`, `--offwhite`, `--black`, `--muted`, `--line` (hairline borders everywhere, not shadows/dividers).
-- Buttons are pill-shaped (`.btn--black`, `.btn--white`, `.btn--ghost`); icons are inline stroke-only SVGs (`viewBox="0 0 24 24"`, `stroke-width="1.3–1.6"`, no fill), never an icon font or emoji.
+The Vowly system (from the V0 "Claret & Mercury" concept): Ivory page, Ink text, a single Claret accent used sparingly, hairline Stone/Mercury borders, minimal radii, almost no shadows — no bright colors, gradients, or cartoon icons. Everything is tokenised at the top of `styles.css`; use the tokens, never raw hex values, in new CSS or inline styles.
+- Palette: `--color-ink #17161A`, `--color-claret #7C1D2E`, `--color-mercury #C4C7CB`, `--color-stone #E7E3DC`, `--color-ivory #FBFAF7`, plus derived neutrals (`--color-graphite` secondary text, `--color-surface` cards/inputs, `--color-mist` sunken sections). Semantic roles (`--text-secondary`, `--bg-surface`, `--border-hairline`, `--accent`, `--color-error`, `--progress-fill`…) sit on top.
+- Fonts: `Fraunces` (display/headings, big numbers; `<em>` inside a heading renders italic Claret), `Geist` (body/UI), `Geist Mono` (uppercase eyebrows, metric labels, dates, amounts) — loaded via the `@import` at the top of `styles.css`. Use `var(--font-display|sans|mono)`, not font names.
+- The old names `--white`, `--offwhite`, `--black`, `--muted`, `--line` are kept as aliases onto the new tokens because many inline styles in the HTML/JS still use them.
+- Brand markup is `<a class="brand"><span class="brand-mark" aria-hidden="true">V</span>Vowly</a>`.
+- Buttons: `.btn--black` (Ink primary), `.btn--ghost` (surface + Stone hairline), `.btn--claret` (accent), 4px radius — not pills. Inside `.page-hero-ctas`, `.btn--ghost` renders as a mono caps text link. Progress bars are 3px Claret on Stone. Icons are inline stroke-only SVGs (`viewBox="0 0 24 24"`, `stroke-width="1.2–1.4"`, no fill), never an icon font or emoji.
+- Form controls get their look from a zero-specificity `:where(input…, select, textarea)` rule — don't re-declare border/font inline on new inputs, or you'll lose the Claret focus state.
 
 ## Architecture
 
@@ -65,7 +68,7 @@ Key cross-entity behavior worth knowing before touching budget/vendor code: **ve
 - `wedding-data.js` itself stays the single synchronous local cache every render function already reads/writes (unchanged) — `VOWDATA.hydrateFrom(remoteShape)` overwrites the Supabase-backed sections of that cache on page load, and `VOWDATA.enableRemoteSync(weddingId)` makes every mutator additionally fire a matching `window.VOWREMOTE.sync*()` call in the background afterward. If nobody's signed in, none of this runs and the app behaves exactly like the original localStorage-only build.
 - `supabase/schema.sql` is the full schema (`profiles`, `weddings`, `guests`, `tables`, `tasks`, `appointments`, `budget_items`, `wedding_settings`) with RLS enabled and policies enforcing the `auth user → profile → wedding → everything else` ownership chain. It's idempotent — safe to re-run.
 - **Not backed by Supabase yet, still localStorage-only:** vendors/enquiries/quotes, messages, wedding-day timeline/contacts — deliberately, to leave room for a future vendor-marketplace schema.
-- `login.html`, `signup.html`, `reset-password.html`, `update-password.html` are the auth pages, built from the same visual components as everything else (no new CSS). `dashboard.html` and `wedding-details.html` each run an async auth-check-then-hydrate bootstrap before their existing (otherwise-unchanged) render code runs.
+- `login.html`, `signup.html`, `reset-password.html`, `update-password.html` are the auth pages, built from the same visual components as everything else. `dashboard.html` and `wedding-details.html` each run an async auth-check-then-hydrate bootstrap before their existing (otherwise-unchanged) render code runs.
 
 ### Vendor marketplace
 `vendor-directory.js` (`window.VOWVENDORS`) is a static, hand-curated directory of real Sydney vendors — platform data, not per-couple data, and deliberately kept out of `VOWDATA`/Supabase. `vendors.html` + `vendors.js` are the public directory/search/profile UI; a couple's relationship to a vendor (shortlisted/enquiry/quote/booked) lives in `VOWDATA.vendors[]` in `dashboard.js`'s "My Vendors" view, linked by `vendorId`.
