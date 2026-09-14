@@ -47,6 +47,12 @@ const VOWDATA = (function () {
     });
   }
 
+  // Older local-only plans stored checklist tasks as 't0', 't1', … — those
+  // can never be written to a uuid column, so callers that are about to sync
+  // a list use this to decide whether an existing id can be kept.
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  function isUuid(id) { return typeof id === 'string' && UUID_RE.test(id); }
+
   function loadRaw() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -205,14 +211,14 @@ const VOWDATA = (function () {
   function buildTasksFromDate(weddingDateStr) {
     const template = defaultTaskTemplate();
     const wedding = weddingDateStr ? new Date(weddingDateStr + 'T00:00:00') : null;
-    return template.map(function (t, i) {
+    return template.map(function (t) {
       let due = '';
       if (wedding && !isNaN(wedding.getTime())) {
         const d = new Date(wedding);
         d.setDate(d.getDate() - Math.round(t.monthsBefore * 30));
         due = d.toISOString().slice(0, 10);
       }
-      return { id: 't' + i, title: t.title, category: t.category, monthsBefore: t.monthsBefore, dueDate: due, priority: t.priority, completed: false };
+      return { id: uid('t'), title: t.title, category: t.category, monthsBefore: t.monthsBefore, dueDate: due, priority: t.priority, completed: false };
     });
   }
 
@@ -459,8 +465,10 @@ const VOWDATA = (function () {
 
   // Merges new answers into the existing wedding object — this is an update,
   // never a new record. If the date/guest count/budget changed, task due
-  // dates are regenerated from scratch, but completion is preserved by
-  // matching on title so changing your date never wipes real progress.
+  // dates are regenerated from scratch, but each template task keeps its
+  // existing id and completion by matching on title — so changing your date
+  // never wipes real progress, and the synced Supabase rows are updated in
+  // place rather than deleted and recreated.
   function updateWeddingDetails(patch) {
     const data = loadRaw();
     if (!data || !data.wedding) return null;
@@ -477,18 +485,18 @@ const VOWDATA = (function () {
       const fresh = buildTasksFromDate(data.wedding.date);
       const templateTitles = {};
       defaultTaskTemplate().forEach(function (t) { templateTitles[t.title] = true; });
-      const completedByTitle = {};
-      const autoNoteByTitle = {};
+      const existingByTitle = {};
       data.tasks.forEach(function (t) {
-        if (templateTitles[t.title] && t.completed) {
-          completedByTitle[t.title] = true;
-          if (t.autoNote) autoNoteByTitle[t.title] = t.autoNote;
-        }
+        if (templateTitles[t.title] && !existingByTitle[t.title]) existingByTitle[t.title] = t;
       });
-      const customTasks = data.tasks.filter(function (t) { return !templateTitles[t.title]; });
+      const customTasks = data.tasks
+        .filter(function (t) { return !templateTitles[t.title]; })
+        .map(function (t) { return isUuid(t.id) ? t : Object.assign({}, t, { id: uid('t') }); });
       const regenerated = fresh.map(function (t) {
-        const patch = { completed: !!completedByTitle[t.title] };
-        if (autoNoteByTitle[t.title]) patch.autoNote = autoNoteByTitle[t.title];
+        const prev = existingByTitle[t.title];
+        const patch = { completed: !!(prev && prev.completed) };
+        if (prev && isUuid(prev.id)) patch.id = prev.id;
+        if (prev && prev.completed && prev.autoNote) patch.autoNote = prev.autoNote;
         return Object.assign({}, t, patch);
       });
       data.tasks = regenerated.concat(customTasks);
