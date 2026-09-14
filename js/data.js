@@ -261,28 +261,77 @@
   // correct way to keep a whole list (guests, tables, tasks) in sync when a
   // single UI action can add, edit, *and* remove records in one go (e.g. a
   // plus-one being materialised or removed alongside its primary guest).
+  //
+  // Upsert runs first so a failure can never lose data: a failed upsert
+  // changes nothing remotely, and a failed delete only leaves extra rows,
+  // which the next replace of that list removes. The rows to delete are
+  // worked out from the remote ids rather than sent as a "not in (every
+  // local id)" filter, which grows with the list and can exceed URL limits
+  // on a large guest list.
+  const DELETE_CHUNK = 100;
+  const SELECT_PAGE = 1000;
+
   async function bulkReplace(c, table, weddingId, localRows, mapper) {
     const rows = localRows.map(function (r) { return mapper(weddingId, r); });
     if (rows.length) unwrap(await c.from(table).upsert(rows));
-    const keepIds = localRows.map(function (r) { return r.id; });
-    let del = c.from(table).delete().eq('wedding_id', weddingId);
-    if (keepIds.length) del = del.not('id', 'in', '(' + keepIds.join(',') + ')');
-    unwrap(await del);
+
+    const keep = {};
+    localRows.forEach(function (r) { keep[r.id] = true; });
+    const stale = [];
+    for (let from = 0; ; from += SELECT_PAGE) {
+      const page = unwrap(await c.from(table).select('id').eq('wedding_id', weddingId).order('id').range(from, from + SELECT_PAGE - 1)) || [];
+      page.forEach(function (r) { if (!keep[r.id]) stale.push(r.id); });
+      if (page.length < SELECT_PAGE) break;
+    }
+    for (let i = 0; i < stale.length; i += DELETE_CHUNK) {
+      unwrap(await c.from(table).delete().eq('wedding_id', weddingId).in('id', stale.slice(i, i + DELETE_CHUNK)));
+    }
   }
 
-  async function syncGuestsBulkReplace(weddingId, localGuests) {
-    const c = await client();
-    await bulkReplace(c, 'guests', weddingId, localGuests, guestLocalToRow);
+  // Bulk replaces run one at a time, in the order the mutations happened.
+  // Run concurrently, an older snapshot's delete step could remove a row a
+  // newer snapshot had just upserted, and a guest could be written with a
+  // table_id before that table's own insert landed (guests_table_id_fkey).
+  //
+  // Each call sends the whole list, so the newest call for a table always
+  // brings Supabase fully back in line. If the newest call fails (e.g. a
+  // dropped connection) it's retried once; an older failed call is simply
+  // superseded by the newer one already queued behind it.
+  const BULK_RETRY_DELAY_MS = 1500;
+  let bulkChain = Promise.resolve();
+  const bulkSeq = {};
+
+  function queueBulkReplace(table, weddingId, localRows, mapper) {
+    const key = weddingId + ':' + table;
+    const seq = bulkSeq[key] = (bulkSeq[key] || 0) + 1;
+    function enqueue() {
+      const run = bulkChain.then(async function () {
+        const c = await client();
+        await bulkReplace(c, table, weddingId, localRows, mapper);
+      });
+      bulkChain = run.catch(function () {});
+      return run;
+    }
+    return enqueue().catch(function (e) {
+      if (bulkSeq[key] !== seq) return;
+      return new Promise(function (resolve) { setTimeout(resolve, BULK_RETRY_DELAY_MS); }).then(function () {
+        if (bulkSeq[key] !== seq) return;
+        console.warn('[Vow & Co.] Retrying ' + table + ' sync after error:', e);
+        return enqueue();
+      });
+    });
   }
 
-  async function syncTablesBulkReplace(weddingId, localTables) {
-    const c = await client();
-    await bulkReplace(c, 'tables', weddingId, localTables, tableLocalToRow);
+  function syncGuestsBulkReplace(weddingId, localGuests) {
+    return queueBulkReplace('guests', weddingId, localGuests, guestLocalToRow);
   }
 
-  async function syncTasksBulkReplace(weddingId, localTasks) {
-    const c = await client();
-    await bulkReplace(c, 'tasks', weddingId, localTasks, taskLocalToRow);
+  function syncTablesBulkReplace(weddingId, localTables) {
+    return queueBulkReplace('tables', weddingId, localTables, tableLocalToRow);
+  }
+
+  function syncTasksBulkReplace(weddingId, localTasks) {
+    return queueBulkReplace('tasks', weddingId, localTasks, taskLocalToRow);
   }
 
   async function syncTaskUpsert(weddingId, localTask) {
