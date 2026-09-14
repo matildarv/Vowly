@@ -71,32 +71,210 @@ const VOWDATA = (function () {
   // render code needing to become async. If remote sync was never enabled
   // (no session, or Supabase isn't configured), these calls are no-ops and
   // the app behaves exactly as the original localStorage-only build did.
+  //
+  // Writes go through an outbox rather than straight to Supabase, so a
+  // failed save is never silently lost:
+  //  - every mutation records one op, kept in localStorage until Supabase
+  //    confirms it — a failed or interrupted save survives a refresh and is
+  //    replayed (see flushPendingSyncs) instead of being overwritten by the
+  //    next hydrate;
+  //  - ops are written one at a time, oldest first. Each op carries the
+  //    record's (or the whole list's) current state, so a newer op for the
+  //    same record, or a whole-list replace of the same table, supersedes an
+  //    older unsent one;
+  //  - after a failure, later ops for the same table wait (a stale upsert
+  //    must never land after a newer delete), other tables carry on, and the
+  //    outbox is retried with backoff and whenever the browser comes back
+  //    online.
+  // Pages show progress via onSyncStateChange() — see js/sync-status.js.
+  const OUTBOX_KEY = 'vowco_sync_outbox_v1';
+  const RETRY_DELAYS_MS = [2000, 5000, 10000, 20000, 30000];
+
+  // Which record each VOWREMOTE sync call writes, so ops can supersede each other.
+  const SYNC_TARGETS = {
+    syncWeddingUpdate: { table: 'wedding' },
+    syncTasksBulkReplace: { table: 'tasks', bulk: true },
+    syncTaskUpsert: { table: 'tasks', id: function (t) { return t.id; } },
+    syncTaskDelete: { table: 'tasks', id: function (id) { return id; } },
+    syncGuestsBulkReplace: { table: 'guests', bulk: true },
+    syncTablesBulkReplace: { table: 'tables', bulk: true },
+    syncAppointmentUpsert: { table: 'appointments', id: function (a) { return a.id; } },
+    syncAppointmentDelete: { table: 'appointments', id: function (id) { return id; } },
+    syncBudgetItemUpsert: { table: 'budgetItems', id: function (b) { return b.id; } },
+    syncBudgetItemDelete: { table: 'budgetItems', id: function (id) { return id; } }
+  };
+
   let remoteEnabled = false;
   let remoteWeddingId = null;
-  // Every in-flight background sync since the last waitForSync() call. A
-  // page that's about to navigate away right after a mutation (e.g. wedding
-  // details' "Save changes" redirecting to the dashboard) should await
-  // waitForSync() first — otherwise the navigation can tear down the
-  // in-flight request before Supabase ever receives it, silently losing the
-  // write even though the local cache already looks saved.
-  let pendingSyncs = [];
+  let outbox = emptyOutbox(null);
+  let draining = false;
+  let drainAgain = false;
+  let drainWaiters = [];
+  let retryTimer = null;
+  let retryAttempt = 0;
+  let lastSyncError = null; // { kind: 'network' | 'rejected' } while the latest attempt failed
+  let hasSavedThisPage = false;
+  const syncListeners = [];
 
-  function enableRemoteSync(weddingId) { remoteEnabled = true; remoteWeddingId = weddingId; }
-  function disableRemoteSync() { remoteEnabled = false; remoteWeddingId = null; }
+  function emptyOutbox(weddingId) { return { weddingId: weddingId, seq: 0, ops: {} }; }
+  function outboxSize() { return Object.keys(outbox.ops).length; }
+
+  function persistOutbox() {
+    try {
+      if (outboxSize()) localStorage.setItem(OUTBOX_KEY, JSON.stringify(outbox));
+      else localStorage.removeItem(OUTBOX_KEY);
+    } catch (e) { /* storage unavailable — the outbox still works in memory for this page */ }
+  }
+
+  function loadOutbox(weddingId) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(OUTBOX_KEY) || 'null');
+      if (saved && saved.weddingId === weddingId && saved.ops) return saved;
+      if (saved) {
+        // Unsent changes for a different wedding can't be written under this
+        // account's session (RLS would reject them), so they're dropped.
+        console.warn('[Vow & Co.] Discarding unsent changes that belong to a different wedding.');
+        localStorage.removeItem(OUTBOX_KEY);
+      }
+    } catch (e) { /* storage unavailable or unreadable */ }
+    return emptyOutbox(weddingId);
+  }
+
+  function getSyncState() {
+    if (!remoteEnabled) return { status: 'idle', pending: 0 };
+    const pending = outboxSize();
+    if (pending && lastSyncError) return { status: 'error', pending: pending, errorKind: lastSyncError.kind };
+    if (pending || draining) return { status: 'saving', pending: pending };
+    return { status: hasSavedThisPage ? 'saved' : 'idle', pending: 0 };
+  }
+
+  function emitSyncState() {
+    const state = getSyncState();
+    syncListeners.slice().forEach(function (fn) {
+      try { fn(state); } catch (e) { console.error('[Vow & Co.] Sync state listener failed:', e); }
+    });
+  }
+
+  function onSyncStateChange(fn) {
+    syncListeners.push(fn);
+    return function () {
+      const i = syncListeners.indexOf(fn);
+      if (i !== -1) syncListeners.splice(i, 1);
+    };
+  }
+
+  // supabase-js reports a request that never reached the server (offline,
+  // DNS, CORS) as an error with an empty code; anything PostgREST/Postgres
+  // actually rejected carries one.
+  function isNetworkError(e) {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return true;
+    return !e || !e.code;
+  }
+
+  function enableRemoteSync(weddingId) {
+    remoteEnabled = true;
+    remoteWeddingId = weddingId;
+    outbox = loadOutbox(weddingId);
+    lastSyncError = null;
+    retryAttempt = 0;
+    hasSavedThisPage = false;
+    emitSyncState();
+    if (outboxSize()) drain();
+  }
+
+  function disableRemoteSync() {
+    remoteEnabled = false;
+    remoteWeddingId = null;
+    clearTimeout(retryTimer);
+    retryTimer = null;
+    emitSyncState();
+  }
+
   function isRemoteSyncEnabled() { return remoteEnabled; }
 
   function remoteSync(fn, arg) {
     if (!remoteEnabled || !remoteWeddingId || !window.VOWREMOTE || typeof window.VOWREMOTE[fn] !== 'function') return;
-    pendingSyncs.push(Promise.resolve(window.VOWREMOTE[fn](remoteWeddingId, arg)).catch(function (e) {
-      console.error('[Vow & Co.] Supabase sync failed (' + fn + '):', e);
-      if (typeof window.__vowcoSyncError === 'function') window.__vowcoSyncError(e, fn);
-    }));
+    const target = SYNC_TARGETS[fn] || { table: fn };
+    const key = target.table + ':' + (target.bulk ? '*' : (target.id ? target.id(arg) : ''));
+    const op = { key: key, table: target.table, fn: fn, arg: arg === undefined ? null : JSON.parse(JSON.stringify(arg)), seq: ++outbox.seq };
+    if (target.bulk) {
+      Object.keys(outbox.ops).forEach(function (k) { if (outbox.ops[k].table === target.table) delete outbox.ops[k]; });
+    }
+    outbox.ops[key] = op;
+    persistOutbox();
+    emitSyncState();
+    drain();
   }
 
+  async function drain() {
+    if (draining) { drainAgain = true; return; }
+    if (!remoteEnabled) return;
+    draining = true;
+    clearTimeout(retryTimer);
+    retryTimer = null;
+    emitSyncState();
+
+    let failure = null;
+    do {
+      drainAgain = false;
+      failure = null;
+      const blockedTables = {};
+      const ops = Object.keys(outbox.ops).map(function (k) { return outbox.ops[k]; }).sort(function (a, b) { return a.seq - b.seq; });
+      for (let i = 0; i < ops.length && remoteEnabled; i++) {
+        const op = ops[i];
+        if (outbox.ops[op.key] !== op || blockedTables[op.table]) continue; // superseded, or waiting behind a failed op
+        try {
+          await window.VOWREMOTE[op.fn](outbox.weddingId, op.arg);
+          if (outbox.ops[op.key] === op) { delete outbox.ops[op.key]; persistOutbox(); }
+          hasSavedThisPage = true;
+        } catch (e) {
+          console.error('[Vow & Co.] Supabase sync failed (' + op.fn + '):', e);
+          if (typeof window.__vowcoSyncError === 'function') window.__vowcoSyncError(e, op.fn);
+          blockedTables[op.table] = true;
+          failure = e;
+        }
+      }
+    } while (drainAgain && remoteEnabled);
+
+    lastSyncError = failure && outboxSize() ? { kind: isNetworkError(failure) ? 'network' : 'rejected' } : null;
+    if (lastSyncError && remoteEnabled) scheduleRetry();
+    else retryAttempt = 0;
+    draining = false;
+    emitSyncState();
+    const waiters = drainWaiters;
+    drainWaiters = [];
+    waiters.forEach(function (resolve) { resolve(); });
+  }
+
+  function scheduleRetry() {
+    clearTimeout(retryTimer);
+    const delay = RETRY_DELAYS_MS[Math.min(retryAttempt, RETRY_DELAYS_MS.length - 1)];
+    retryAttempt++;
+    retryTimer = setTimeout(function () { retryTimer = null; drain(); }, delay);
+  }
+
+  window.addEventListener('online', function () {
+    if (remoteEnabled && outboxSize()) drain();
+  });
+
+  // Resolves true once every change recorded so far has reached Supabase, or
+  // false if one failed (it stays queued and keeps retrying). A page about to
+  // navigate away right after a mutation (e.g. wedding details' "Save
+  // changes") must await this first — navigation can cancel an in-flight
+  // request, and a failed save must not be reported as saved.
   function waitForSync() {
-    const all = Promise.all(pendingSyncs);
-    pendingSyncs = [];
-    return all;
+    return new Promise(function (resolve) {
+      function done() { resolve(outboxSize() === 0); }
+      if (draining) drainWaiters.push(done);
+      else done();
+    });
+  }
+
+  // Attempts any queued changes now (e.g. ones left over from a previous
+  // page load) and resolves like waitForSync().
+  function flushPendingSyncs() {
+    if (remoteEnabled && outboxSize() && !draining) drain();
+    return waitForSync();
   }
 
   function saveRaw(data) {
@@ -272,8 +450,22 @@ const VOWDATA = (function () {
   // load re-hydrates from here before any render function runs, and every
   // render function keeps reading the same synchronous local cache as
   // before, unaware anything changed underneath it.
+  //
+  // The local-only sections come from this same wedding's cached plan, or
+  // the copy set aside when that account last logged out (see
+  // clearAccountData), or — for a couple who just signed up from an
+  // anonymous draft in this browser — that draft. Never from a different
+  // account's plan.
   function hydrateFrom(remoteShape) {
     const existing = loadRaw() || {};
+    const weddingId = remoteShape.wedding && remoteShape.wedding.id;
+    const existingId = existing.wedding && existing.wedding.id;
+    const stash = loadLocalOnlyStash();
+    let localOnly = {};
+    if (existingId && existingId === weddingId) localOnly = existing;
+    else if (weddingId && stash[weddingId]) localOnly = stash[weddingId];
+    else if (existing.wedding && !existingId) localOnly = existing;
+
     const merged = {
       wedding: remoteShape.wedding || existing.wedding,
       tasks: remoteShape.tasks || [],
@@ -281,13 +473,66 @@ const VOWDATA = (function () {
       guests: remoteShape.guests || [],
       tables: remoteShape.tables || [],
       appointments: remoteShape.appointments || [],
-      vendors: existing.vendors || [],
-      messages: existing.messages || { threads: [] },
-      weddingDay: existing.weddingDay || { timeline: defaultWeddingDayTimeline(), contacts: [] }
+      vendors: localOnly.vendors || [],
+      messages: localOnly.messages || { threads: [] },
+      weddingDay: localOnly.weddingDay || { timeline: defaultWeddingDayTimeline(), contacts: [] }
     };
     const migrated = migrate(merged);
-    saveRaw(migrated);
+    if (saveRaw(migrated) && weddingId && stash[weddingId]) {
+      delete stash[weddingId];
+      saveLocalOnlyStash(stash);
+    }
     return migrated;
+  }
+
+  // Local-only sections (not in Supabase yet) of each account that has
+  // logged out in this browser, keyed by wedding id. Only ever read back by
+  // hydrateFrom() for that same wedding, so another visitor or account never
+  // sees them.
+  const LOCAL_ONLY_STASH_KEY = 'vowco_local_only_by_wedding_v1';
+
+  function loadLocalOnlyStash() {
+    try { return JSON.parse(localStorage.getItem(LOCAL_ONLY_STASH_KEY) || '{}') || {}; } catch (e) { return {}; }
+  }
+
+  function saveLocalOnlyStash(stash) {
+    try {
+      if (Object.keys(stash).length) localStorage.setItem(LOCAL_ONLY_STASH_KEY, JSON.stringify(stash));
+      else localStorage.removeItem(LOCAL_ONLY_STASH_KEY);
+      return true;
+    } catch (e) {
+      console.warn('[Vow & Co.] Could not keep vendors/messages/wedding-day data for next sign-in:', e);
+      return false;
+    }
+  }
+
+  // Removes a signed-in couple's wedding plan from this browser, so the next
+  // person using it can't see it — on logout, and whenever a signed-out page
+  // finds one left behind. Nothing in Supabase is touched; signing back in
+  // reloads it all from there. The local-only sections are set aside for that
+  // account (see loadLocalOnlyStash). Unsent changes stay queued for the same
+  // account unless `discardUnsaved` (logout, after the couple has confirmed
+  // losing them). An anonymous local draft has no wedding id, isn't an
+  // account's data, and is left alone.
+  function clearAccountData(opts) {
+    const data = loadRaw();
+    const weddingId = data && data.wedding && data.wedding.id;
+    if (weddingId) {
+      try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+      const stash = loadLocalOnlyStash();
+      stash[weddingId] = {
+        vendors: data.vendors || [],
+        messages: data.messages || { threads: [] },
+        weddingDay: data.weddingDay || { timeline: [], contacts: [] }
+      };
+      saveLocalOnlyStash(stash);
+    }
+    if (opts && opts.discardUnsaved) {
+      try { localStorage.removeItem(OUTBOX_KEY); } catch (e) {}
+      outbox = emptyOutbox(null);
+      lastSyncError = null;
+    }
+    disableRemoteSync();
   }
 
   // ---------------- TASKS ----------------
@@ -1621,10 +1866,14 @@ const VOWDATA = (function () {
     save: save,
     clearAll: clearAll,
     hydrateFrom: hydrateFrom,
+    clearAccountData: clearAccountData,
     enableRemoteSync: enableRemoteSync,
     disableRemoteSync: disableRemoteSync,
     isRemoteSyncEnabled: isRemoteSyncEnabled,
     waitForSync: waitForSync,
+    flushPendingSyncs: flushPendingSyncs,
+    getSyncState: getSyncState,
+    onSyncStateChange: onSyncStateChange,
     toggleTask: toggleTask,
     addTask: addTask,
     deleteTask: deleteTask,

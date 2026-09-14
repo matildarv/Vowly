@@ -1159,6 +1159,11 @@ td.empty-state{ padding:40px 16px; }
 .vp-tag-row{ display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
 .vp-tag{ border:1px solid var(--border-hairline); border-radius:var(--radius-xs); padding:4px 10px; font-size:0.78rem; color:var(--text-secondary); background:var(--bg-surface); }
 
+/* Supabase save status (js/sync-status.js) — fixed so it stays visible
+   wherever the couple has scrolled; sits below the loading overlay (500). */
+.sync-status{ position:fixed; right:clamp(16px,2vw,24px); bottom:clamp(16px,2vw,24px); z-index:150; max-width:calc(100vw - 32px); padding:10px 14px; background:var(--bg-surface); border:1px solid var(--border-hairline); border-radius:var(--radius-sm); font-family:var(--font-mono); font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-secondary); }
+.sync-status--error{ border-color:var(--color-error); color:var(--color-error); font-family:var(--font-sans); font-size:0.85rem; letter-spacing:0; text-transform:none; }
+
 /* =====================================================================
    RESPONSIVE OVERRIDES
    Deliberately last in the file: with equal specificity, a later rule wins

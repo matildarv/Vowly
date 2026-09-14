@@ -111,9 +111,17 @@
           history.replaceState(null, '', window.location.pathname + window.location.hash);
         }
         if (wedding) {
-          const full = await VOWREMOTE.fetchFullWedding(wedding.id);
-          VOWDATA.hydrateFrom(full);
+          // Send any changes still queued from an earlier visit before
+          // loading, so hydrating can't overwrite them. If they still can't
+          // be saved, keep showing this wedding's local copy (which has
+          // them) — the save-status message explains, and retries continue.
           VOWDATA.enableRemoteSync(wedding.id);
+          const allSaved = await VOWDATA.flushPendingSyncs();
+          const cached = VOWDATA.get();
+          if (allSaved || !(cached && cached.wedding && cached.wedding.id === wedding.id)) {
+            const full = await VOWREMOTE.fetchFullWedding(wedding.id);
+            VOWDATA.hydrateFrom(full);
+          }
           authedWedding = wedding;
         }
       }
@@ -123,6 +131,10 @@
       showFatalError('Something went wrong loading your wedding. Please refresh the page to try again.');
       return;
     }
+  } else {
+    // Nobody's signed in, so a signed-in couple's plan left in this browser
+    // must not be shown (an anonymous local draft is kept).
+    VOWDATA.clearAccountData();
   }
 
   loadingOverlay.remove();
@@ -188,8 +200,13 @@
     resetLink.textContent = 'Log out';
     resetLink.addEventListener('click', async function (e) {
       e.preventDefault();
+      // Give queued saves a last chance, and never drop unsaved changes
+      // without asking.
+      const allSaved = await VOWDATA.flushPendingSyncs();
+      if (!allSaved && !confirm("Some of your latest changes haven't saved yet. If you log out now, they'll be lost. Log out anyway?")) return;
       await VOWAUTH.signOut();
-      VOWDATA.disableRemoteSync();
+      // Only this browser's copy is removed; Supabase keeps everything.
+      VOWDATA.clearAccountData({ discardUnsaved: true });
       window.location.href = 'index.html';
     });
   } else {

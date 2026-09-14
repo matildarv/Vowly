@@ -132,6 +132,7 @@
 <script src="js/data.js"></script>
 <script src="calculator.js"></script>
 <script src="wedding-data.js"></script>
+<script src="js/sync-status.js"></script>
 <script src="js/quantity-input.js"></script>
 <script src="js/calendar.js"></script>
 <script>
@@ -146,9 +147,15 @@
         const profile = profileResult.data;
         const wedding = profile ? await VOWREMOTE.getWeddingForProfile(profile.id) : null;
         if (wedding) {
-          const full = await VOWREMOTE.fetchFullWedding(wedding.id);
-          VOWDATA.hydrateFrom(full);
+          // Same order as dashboard.js: send queued changes first, and keep
+          // this wedding's local copy if they still can't be saved.
           VOWDATA.enableRemoteSync(wedding.id);
+          const allSaved = await VOWDATA.flushPendingSyncs();
+          const cached = VOWDATA.get();
+          if (allSaved || !(cached && cached.wedding && cached.wedding.id === wedding.id)) {
+            const full = await VOWREMOTE.fetchFullWedding(wedding.id);
+            VOWDATA.hydrateFrom(full);
+          }
         }
       } catch (e) {
         console.error('[Vow & Co.] Failed to load your wedding from Supabase:', e);
@@ -156,6 +163,9 @@
         window.location.href = 'dashboard.html';
         return;
       }
+    } else {
+      // Never show a signed-in couple's plan to a signed-out visitor.
+      VOWDATA.clearAccountData();
     }
 
     const data = VOWDATA.get();
@@ -309,8 +319,11 @@
       VOWDATA.updateWeddingDetails(patch);
       // Wait for the background Supabase write(s) to finish before
       // navigating away — otherwise the page unload can cancel the
-      // in-flight request and the update silently never lands.
-      await VOWDATA.waitForSync();
+      // in-flight request and the update silently never lands. If a write
+      // failed, stay here rather than reporting the details as updated: the
+      // save-status message explains, and the change stays queued and retries.
+      const allSaved = await VOWDATA.waitForSync();
+      if (!allSaved) return;
       window.location.href = 'dashboard.html?updated=details';
     };
   })();
