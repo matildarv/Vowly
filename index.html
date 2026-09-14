@@ -112,17 +112,38 @@
             <option>Sydney</option><option>Melbourne</option><option>Brisbane</option><option>Perth</option><option>Adelaide</option><option>Gold Coast</option><option>Canberra</option><option>Hobart</option><option>Byron Bay</option><option>Other / regional</option>
           </select>
         </div>
-        <div class="calc-field">
-          <label>Guest count <span class="val" id="calcGuestsVal">100</span></label>
-          <input type="range" id="calcGuests" min="10" max="400" step="5" value="100">
+        <div class="calc-field qty-field qty-field--compact">
+          <label class="qty-label" for="calcGuests">Guest count</label>
+          <div class="qty-box">
+            <input type="text" inputmode="numeric" id="calcGuests" class="qty-input" data-qty="integer" value="100" aria-describedby="calcGuestsHelp">
+          </div>
+          <p class="qty-help" id="calcGuestsHelp">Enter your guest count — there's no limit.</p>
+          <div class="qty-presets" role="group" aria-label="Suggested guest counts">
+            <button type="button" class="qty-preset" data-value="50">50</button>
+            <button type="button" class="qty-preset" data-value="100">100</button>
+            <button type="button" class="qty-preset" data-value="150">150</button>
+            <button type="button" class="qty-preset" data-value="200">200</button>
+            <button type="button" class="qty-preset" data-value="250">250</button>
+          </div>
         </div>
         <div class="calc-field">
           <label>Wedding style</label>
           <div class="calc-style-row" id="calcStyleRow"></div>
         </div>
-        <div class="calc-field">
-          <label>Estimated budget <span class="val" id="calcBudgetVal">$40,000</span></label>
-          <input type="range" id="calcBudget" min="5000" max="150000" step="1000" value="40000">
+        <div class="calc-field qty-field qty-field--compact">
+          <label class="qty-label" for="calcBudget">Estimated budget</label>
+          <div class="qty-box">
+            <span class="qty-prefix" aria-hidden="true">$</span>
+            <input type="text" inputmode="decimal" id="calcBudget" class="qty-input" data-qty="currency" value="40000" aria-describedby="calcBudgetHelp">
+          </div>
+          <p class="qty-help" id="calcBudgetHelp">Enter any amount — there's no limit. We'll format it for you.</p>
+          <div class="qty-presets" role="group" aria-label="Suggested budgets">
+            <button type="button" class="qty-preset" data-value="30000">$30k</button>
+            <button type="button" class="qty-preset" data-value="50000">$50k</button>
+            <button type="button" class="qty-preset" data-value="75000">$75k</button>
+            <button type="button" class="qty-preset" data-value="100000">$100k</button>
+            <button type="button" class="qty-preset" data-value="150000">$150k</button>
+          </div>
         </div>
       </div>
       <div class="calc-results">
@@ -316,6 +337,7 @@
 </footer>
 
 <script src="calculator.js"></script>
+<script src="js/quantity-input.js"></script>
 <script>
   (function () {
     const styleOptions = ['Classic', 'Modern', 'Romantic', 'Coastal', 'Rustic', 'Luxury', 'Minimal', 'Garden'];
@@ -328,12 +350,12 @@
     const guestsInput = document.getElementById('calcGuests');
     const budgetInput = document.getElementById('calcBudget');
     const locationSelect = document.getElementById('calcLocation');
+    VOWQTY.attach(guestsInput);
+    VOWQTY.attach(budgetInput);
 
     function renderCalc() {
-      const guests = Number(guestsInput.value);
-      const budget = Number(budgetInput.value);
-      document.getElementById('calcGuestsVal').textContent = guests;
-      document.getElementById('calcBudgetVal').textContent = VOWCO.formatCurrency(budget);
+      const guests = VOWQTY.value(guestsInput) || 0;
+      const budget = VOWQTY.value(budgetInput) || 0;
       document.getElementById('calcTotal').textContent = VOWCO.formatCurrency(budget);
 
       const breakdown = VOWCO.budgetBreakdown(budget);

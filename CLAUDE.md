@@ -31,6 +31,11 @@ The Vowly system (from the V0 "Claret & Mercury" concept): Ivory page, Ink text,
 - Brand markup is `<a class="brand"><span class="brand-mark" aria-hidden="true">V</span>Vowly</a>`.
 - Buttons: `.btn--black` (Ink primary), `.btn--ghost` (surface + Stone hairline), `.btn--claret` (accent), 4px radius — not pills. Inside `.page-hero-ctas`, `.btn--ghost` renders as a mono caps text link. Progress bars are 3px Claret on Stone. Icons are inline stroke-only SVGs (`viewBox="0 0 24 24"`, `stroke-width="1.2–1.4"`, no fill), never an icon font or emoji.
 - Form controls get their look from a zero-specificity `:where(input…, select, textarea)` rule — don't re-declare border/font inline on new inputs, or you'll lose the Claret focus state.
+- Button hover is CSS-only: primary Ink → Claret with a 1px lift and soft shadow; secondary keeps Ivory and turns its border/text Claret. Timing/lift/shadow are the `--hover-*` tokens.
+
+### Shared input components
+- **`js/quantity-input.js` (`window.VOWQTY`) — product rule: when a user enters a quantity with no real-world maximum (budget, guests…), never use a slider or an arbitrary cap.** Use the `.qty-field` markup (see the file header) with presets as shortcuts only. The visible text is comma-formatted, so always read it with `VOWQTY.value(input)` (Number or null) and write with `VOWQTY.set(input, n)` — never `Number(input.value)`. The only ceiling is the database column size (`weddings.budget numeric(12,2)`, `guest_count integer`). Used on the homepage calculator, `plan.html` and `wedding-details.html`.
+- **`js/calendar.js` (`window.VOWCAL`)** automatically replaces every `<input type="date">` (including ones dashboard.js renders later) with the Vowly calendar. The native input stays hidden and remains the source of truth, so `input.value` reads/writes of `'YYYY-MM-DD'` keep working and selecting a day fires `input`/`change`. Opt-ins: `data-calendar="inline"`, `data-calendar-min="today"`. Include the script on any page that has date inputs.
 
 ## Architecture
 
